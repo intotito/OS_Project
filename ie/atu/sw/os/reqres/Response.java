@@ -50,8 +50,14 @@ public abstract class Response implements Serializable, Formatter {
 			return new Register(Integer.parseInt(res.substring("register".length())));
 		} else if (res.toLowerCase().matches("login\\d")) {
 			return new Login(Integer.parseInt(res.substring("login".length())));
-		} else if(res.toLowerCase().matches("add\\d")) {
+		} else if (res.toLowerCase().matches("add\\d")) {
 			return new AddReport(Integer.parseInt(res.substring("add".length())));
+		} else if (res.toLowerCase().matches("assign\\d")) {
+			return new Assign(Integer.parseInt(res.substring("assign".length())));
+		} else if(res.toLowerCase().equals("users")) {
+			
+		} else if(res.toLowerCase().matches("register\\d")) {
+			
 		}
 		throw new IllegalArgumentException("Unknown Response type " + res);
 	}
@@ -106,6 +112,39 @@ public abstract class Response implements Serializable, Formatter {
 		@Override
 		public String getDefaultCancelString() {
 			return "Quit";
+		}
+
+		@Override
+		public boolean hasCancelOption() {
+			return true;
+		}	
+	}
+	
+	public static class Assign extends Response{
+		private int code;
+		private Assign(int code) {
+			this.code = code;
+			options = Server.MAIN_MENU;
+			if(this.code == 0) {
+				buildMessage();
+			} else if(this.code == 2) {
+				setMessage("Report doesn't exist!" + getOptionsAsString(options));
+			} else if (this.code == 1) {
+				setMessage("Invalid user name!" + getOptionsAsString(options));
+			} else {
+				throw new IllegalArgumentException("Unknwon status code " + code);
+			}
+			
+		}
+		
+		@Override
+		public String getHeaderAsString() {
+			return "User assigned to the Report Successfully!";
+		}
+		
+		@Override
+		public String getDefaultCancelString() {
+			return "Exit";
 		}
 
 		@Override
@@ -175,6 +214,7 @@ public abstract class Response implements Serializable, Formatter {
 			if(status == 0) {
 				return super.process();
 			} else {
+				System.out.print(getMessage());
 				return Response.getResponse("connect").process();
 			}
 		}

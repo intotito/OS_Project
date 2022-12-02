@@ -47,6 +47,7 @@ public class Server implements Runnable {
 
 	@Override
 	public void run() {
+		status = STATUS_RUNNING;
 		do {
 			try {
 				System.out.format("Server Running at Port: %d", PORT);

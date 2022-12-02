@@ -2,6 +2,7 @@ package ie.atu.sw.os.data;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -24,16 +25,21 @@ public class Database {
 		load(REPORT_FILE, (s) -> records.add(new Report(s)));
 		load(USER_FILE, (s) -> users.add(new User(s)));
 	}
+	
 
 	private void load(String FILE_PATH, Consumer<String> consumer) throws IOException {
 		System.out.println("Loaading what " + FILE_PATH);
 		File file = new File(FILE_PATH);
-		BufferedReader br = new BufferedReader(new FileReader(file));
-		String str = null;
-		while ((str = br.readLine()) != null) {
-			consumer.accept(str);
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(file));
+			String str = null;
+			while ((str = br.readLine()) != null) {
+				consumer.accept(str);
+			}
+			br.close();
+		} catch (FileNotFoundException fnf) {
+			System.out.println("File not there already, but proceed");
 		}
-		br.close();
 	}
 
 	private void saveToFile(List<? extends Savable> toSave, String FILE_PATH) throws IOException {
@@ -52,6 +58,31 @@ public class Database {
 			saveToFile(records, REPORT_FILE);
 		}
 		return code;
+	}
+
+	public int assign(int reportId, String userId) throws IOException {
+		Report report = null;
+		User user = null;
+		int code = 0;
+		synchronized (records) {
+			report = records.stream().filter((r) -> r.getId() == reportId).findFirst().orElse(null);
+		}
+		if (report != null) {
+			synchronized (users) {
+				user = users.stream().filter((u) -> u.getId().equals(userId)).findFirst().orElse(null);
+			}
+			if (user != null) {
+				report.setAssignee(userId);
+				synchronized (records) {
+					saveToFile(records, REPORT_FILE);
+				}
+			} else {
+				code = 1;
+			}
+		} else {
+			code = 1 << 1;
+		}
+		return code; // 0 -OK, 1 - Records doesn't exist, 2 - User doesn't exist
 	}
 
 	public int login(String userID) {

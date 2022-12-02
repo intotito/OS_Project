@@ -1,6 +1,10 @@
 package ie.atu.sw.os.data;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 
 import ie.atu.sw.os.Savable;
 
@@ -15,7 +19,7 @@ public class Report implements Savable{
 		this.appName = appName;
 		this.platform = platform;
 		this.descr = descr;
-		this.date = LocalDate.now().toEpochDay();
+		this.date = LocalDateTime.now();
 	}
 	public Report(String str) {
 		int i = 0;
@@ -25,13 +29,14 @@ public class Report implements Savable{
 		this.platform = arrays[i++].replace(ESCAPE_CHAR, ',');
 		this.descr = arrays[i++].replace(ESCAPE_CHAR, ',');
 		this.status = STATUS.valueOf(arrays[i++]);
-		this.date = Long.parseLong(arrays[i++]);
+		this.date = LocalDateTime.ofInstant(Instant.ofEpochMilli(Long.parseLong(arrays[i++])), ZoneId.systemDefault());
 		this.assignee = arrays[i++].replace(ESCAPE_CHAR, ',');
+		System.out.println(date);
 	}
 	private int id = -1;
 	private String appName, platform, descr;
 	private STATUS status = STATUS.OPEN;
-	private long date;
+	private LocalDateTime date;
 	
 	private String assignee = " "; // Must not be an empty string
 
@@ -43,12 +48,17 @@ public class Report implements Savable{
 		.append(platform.replace(',', ESCAPE_CHAR)).append(",")
 		.append(descr.replace(',', ESCAPE_CHAR)).append(",")
 		.append(status).append(",")
-		.append(date).append(",")
+		.append(date.atZone(ZoneOffset.systemDefault()).toInstant().toEpochMilli()).append(",")
 		.append(assignee.replace(',', ESCAPE_CHAR)).append(",\n");
 		return sb.toString();
 	}
 	public void setId(int id) {
 		this.id = id;
 	}
-
+	public int getId() {
+		return this.id;
+	}
+	public void setAssignee(String assignee) {
+		this.assignee = assignee;
+	}
 }

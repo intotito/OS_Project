@@ -40,6 +40,15 @@ public class Worker extends Thread {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch(NullPointerException npe) {
+			System.out.println("Client Terminated Connection");
+			try {
+				os.close();
+				is.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
 		}
 
 	}
