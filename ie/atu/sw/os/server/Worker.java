@@ -32,6 +32,7 @@ public class Worker extends Thread {
 			os.writeObject(response);
 			while (true) {
 				Request request = (Request) is.readObject();
+				System.out.println("Read in " + request);
 				response = request.process(database);
 				os.writeObject(response);
 				os.flush();

@@ -24,12 +24,12 @@ public class TestClass {
 	private List<B> listB = new LinkedList<>();
 	
 	public void populateList(List<? extends Doable> list) {
-		list.add(new A());
+	//	list.add(new A());
 	}
 	
 	public static void main() {
 		TestClass tc = new TestClass();
-		tc.populateList(listA);
+	//	tc.populateList(listA);
 	}
 }
 

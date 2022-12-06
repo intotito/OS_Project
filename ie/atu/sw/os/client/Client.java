@@ -30,6 +30,7 @@ public class Client implements Runnable{
 				response = (Response)is.readObject();
 				System.out.println("Did we connect? " + response);
 				request = response.process();
+				System.out.println("PRocessing" + request);
 				os.writeObject(request);
 				os.flush();
 			}while(true);
@@ -39,6 +40,8 @@ public class Client implements Runnable{
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
+		} catch(NullPointerException npe) {
+			npe.printStackTrace();
 		}
 	}
 	

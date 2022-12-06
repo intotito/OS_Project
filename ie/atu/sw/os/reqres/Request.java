@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 
-import ie.atu.sw.os.Savable;
 import ie.atu.sw.os.User;
 import ie.atu.sw.os.data.Database;
 import ie.atu.sw.os.data.Report;
@@ -96,8 +95,8 @@ public abstract class Request implements Serializable {
 				} while (value < 1 || value > menus.length);
 				res = menus[value - 1];
 				if(res.equals("Reports")) {
-					String[] subMenus = {"Assigned", "Unassigned"};
-					System.out.printf("\t\tReports");
+					String[] subMenus = {"All", "Unassigned"};
+					System.out.printf("\t\tView Reports");
 					System.out.printf(getOptionsAsString(subMenus, 2));
 					do {
 						value = Integer.parseInt(reader.readLine().trim());
@@ -109,8 +108,10 @@ public abstract class Request implements Serializable {
 							continue;
 						}
 					}while(value < 1 || value > menus.length);
-					code = value; // Reports
+					code = value - 1; // 0 - Reports, 1 - Users
+					System.out.println("Code : " + code);
 				} 
+				System.out.println("RES: " + res);
 			} catch (NumberFormatException nfe) {
 				nfe.printStackTrace();
 			} catch (IOException e) {
@@ -123,7 +124,12 @@ public abstract class Request implements Serializable {
 			if(res.equalsIgnoreCase("reports")) {
 				return Response.getResponse(res + code);
 			} else if(res.equalsIgnoreCase("users")) {
-				return Response.getResponse(res);
+				System.out.println("Process users requeest");
+				Response.Users u = (Response.Users)Response.getResponse(res);
+				System.out.println(u);
+				u.loadUsers(database.getUsers());
+				
+				return u;
 			} 
 			throw new IllegalStateException("Unrecognized response " + res);
 		}

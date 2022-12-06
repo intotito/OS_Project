@@ -1,6 +1,13 @@
 package ie.atu.sw.os;
 
-public class User implements Savable{
+import java.io.Serializable;
+
+public class User implements Savable, Serializable{
+	@Override
+	public String toString() {
+		return "User [id=" + id + ", name=" + name + ", email=" + email + ", dept=" + dept + "]";
+	}
+
 	private String id, name, email, dept;
 
 	public String getId() {

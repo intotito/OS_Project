@@ -1,14 +1,14 @@
 package ie.atu.sw.os.data;
 
+import java.io.Serializable;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 
 import ie.atu.sw.os.Savable;
 
-public class Report implements Savable{
+public class Report implements Savable, Serializable{
 	public static enum STATUS{
 		OPEN("0PEN"), ASSIGNED("ASSIGNED"), CLOSED("CLOSED");
 		private STATUS(final String text) {

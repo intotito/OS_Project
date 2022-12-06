@@ -26,6 +26,10 @@ public class Database {
 		load(USER_FILE, (s) -> users.add(new User(s)));
 	}
 	
+	public List<User> getUsers(){
+		System.out.println(users.stream().collect(Collectors.toList()));
+		return users.stream().collect(Collectors.toList());
+	}
 
 	private void load(String FILE_PATH, Consumer<String> consumer) throws IOException {
 		System.out.println("Loaading what " + FILE_PATH);

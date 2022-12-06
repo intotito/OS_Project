@@ -4,8 +4,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.util.List;
 
-import ie.atu.sw.os.reqres.Request.Login;
+import ie.atu.sw.os.User;
+import ie.atu.sw.os.data.Report;
 import ie.atu.sw.os.server.Server;
 
 public abstract class Response implements Serializable, Formatter {
@@ -40,7 +42,7 @@ public abstract class Response implements Serializable, Formatter {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return null;
+		throw new IllegalStateException("What went wrong");
 	}
 
 	public static Response getResponse(String res) {
@@ -54,10 +56,15 @@ public abstract class Response implements Serializable, Formatter {
 			return new AddReport(Integer.parseInt(res.substring("add".length())));
 		} else if (res.toLowerCase().matches("assign\\d")) {
 			return new Assign(Integer.parseInt(res.substring("assign".length())));
-		} else if(res.toLowerCase().equals("users")) {
-			
+		} else if(res.toLowerCase().matches("users")) {
+			System.out.println("Will return new USers response");
+			var a = new Users();
+			System.out.println("Check this: " + a);
+			return a;
 		} else if(res.toLowerCase().matches("register\\d")) {
 			
+		}else if (res.toLowerCase().matches("reports\\d")) {
+			return new Reports(Integer.parseInt(res.substring("reports".length())));
 		}
 		throw new IllegalArgumentException("Unknown Response type " + res);
 	}
@@ -82,6 +89,53 @@ public abstract class Response implements Serializable, Formatter {
 		public boolean hasCancelOption() {
 			return true;
 		}		
+	}
+	
+	public static class Reports extends Response{
+		private int code;
+		private List<Report> reports;
+		private Reports(int code) {
+			this.code = code;
+			options = Server.MAIN_MENU;
+			buildMessage();
+		}
+		@Override
+		public String getHeaderAsString() {
+			return code == 0 ? "All Reports" : "Unassigned Reports";
+		}
+		
+		private String showReports() {
+			return reports.toString();
+		}
+	}
+	
+	public static class Users extends Response{
+		private List<User> users;
+		private Users() {
+
+			options = Server.MAIN_MENU;
+			
+		}
+		@Override
+		public String getHeaderAsString() {
+			return String.format("Registered Users\n%s", showUsers());
+		}
+		public void loadUsers(List<User> users) {
+			System.out.println("Loading Users");
+			users.stream().map(User::toString).forEach(System.out::println);
+			this.users = users;
+		}
+		private String showUsers() {
+			System.out.println("How's calling me?");
+			return users.toString();
+		}
+		
+		@Override
+		public Request process() {
+			buildMessage();
+	//		System.out.println(showUsers());
+			return super.process();
+		}
 	}
 	
 	public static class Login extends Response{
