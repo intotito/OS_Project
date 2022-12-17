@@ -25,10 +25,15 @@ public class Database {
 		load(REPORT_FILE, (s) -> records.add(new Report(s)));
 		load(USER_FILE, (s) -> users.add(new User(s)));
 	}
-	
+
 	public List<User> getUsers(){
-		System.out.println(users.stream().collect(Collectors.toList()));
+	//	System.out.println(users.stream().collect(Collectors.toList()));
 		return users.stream().collect(Collectors.toList());
+	}
+	
+	public List<Report> getReports(){
+	//	System.out.println(records.stream().collect(Collectors.toList()));
+		return records.stream().collect(Collectors.toList());
 	}
 
 	private void load(String FILE_PATH, Consumer<String> consumer) throws IOException {
@@ -87,6 +92,23 @@ public class Database {
 			code = 1 << 1;
 		}
 		return code; // 0 -OK, 1 - Records doesn't exist, 2 - User doesn't exist
+	}
+	
+	public int updateReport(int reportId, Report.STATUS status) throws IOException {
+		int code = 0;
+		Report report = null;
+		synchronized(records) {
+			report = records.stream().filter((r) -> r.getId() == reportId).findFirst().orElse(null);
+		}
+		if(report != null) {
+			report.setStatus(status);
+			synchronized(records) {
+				saveToFile(records, REPORT_FILE);
+			}
+		} else {
+			code = 1;
+		}
+		return code; // 0 - OK, 1 - Report ID icorrect
 	}
 
 	public int login(String userID) {

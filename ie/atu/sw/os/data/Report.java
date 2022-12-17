@@ -61,4 +61,7 @@ public class Report implements Savable, Serializable{
 	public void setAssignee(String assignee) {
 		this.assignee = assignee;
 	}
+	public void setStatus(STATUS status) {
+		this.status = status;
+	}
 }

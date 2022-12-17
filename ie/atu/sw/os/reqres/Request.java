@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.util.Arrays;
 
 import ie.atu.sw.os.User;
 import ie.atu.sw.os.data.Database;
@@ -18,52 +19,102 @@ public abstract class Request implements Serializable {
 		System.out.println("Attempting " + req);
 		if (req.equalsIgnoreCase("register")) {
 			return new Register();
+		} else if (req.equalsIgnoreCase("update")) {
+			return new Update();
 		} else if (req.equalsIgnoreCase("login")) {
 			return new Login();
-		} else if(req.matches("^Add.*")) {
+		} else if (req.matches("^Add.*")) {
 			return new AddReport();
-		} else if(req.matches("^Assign.*")) {
+		} else if (req.matches("^Assign.*")) {
 			return new Assign();
-		} else if(req.equalsIgnoreCase("view")) {
+		} else if (req.equalsIgnoreCase("view")) {
 			return new View();
 		}
-		
+
 		throw new IllegalArgumentException(String.format("'%s' Requested Not Supported", req));
 	}
-	
-	public static class AddReport extends Request{
+
+	public static class AddReport extends Request {
 		private static int NAME = 0, PLATFORM = 1, DESCR = 2;
 		private String[] values = new String[5];
-		
-		private AddReport() throws IOException{
+
+		private AddReport() throws IOException {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-			String[] menus = {"Application Name", "Platform", "Bug Description"};
+			String[] menus = { "Application Name", "Platform", "Bug Description" };
 			for (int i = 0; i < menus.length; i++) {
 				System.out.printf("\n\tEnter %s:>", menus[i]);
 				values[i] = reader.readLine();
 			}
 		}
+
 		@Override
 		public Response process(Database database) throws IOException {
 			int id = database.addReport(new Report(values[NAME], values[PLATFORM], values[DESCR]));
 			return Response.getResponse("Add" + id);
 		}
-		
+
 	}
-	
-	public static class Assign extends Request{
+
+	public static class Update extends Request implements Formatter {
+		private static int REPORT_ID = 0, STATUS_ID = 1;
+		private String[] values = new String[2];
+
+		private Update() throws IOException {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+			System.out.printf("\n\tEnter %s:>", "Report Id");
+			values[REPORT_ID] = reader.readLine();
+			String[] menus = Arrays.stream(Report.STATUS.values()).map(Enum::toString).toArray(String[]::new);
+			System.out.printf(getHeaderAsString());
+			System.out.printf(getOptionsAsString(menus, 1));
+			int value = -1;
+			String valString = null;
+			do {
+				try {
+					valString = reader.readLine().trim();
+					value = Integer.parseInt(valString);
+				} catch (NumberFormatException nfe) {
+					System.out.format("Invalid Option '%s' Entered%s", valString, getSelectionsAsString(menus));
+					continue;
+				}
+				if (hasCancelOption() && (value == menus.length + 1)) {
+					throw new IOException("Connection Terminated");
+				}
+				if (value < 1 || value > menus.length) {
+					System.out.format("\tInvalid Option '%d' Entered%s", value, getSelectionsAsString(menus, 1));
+					continue;
+				}
+			} while (value < 1 || value > menus.length);
+			values[STATUS_ID] = menus[value - 1];
+		}
+
+		@Override
+		public String getHeaderAsString() {
+			return "Select Status";
+		}
+
+		@Override
+		public Response process(Database database) throws IOException {
+			int code = database.updateReport(Integer.parseInt(values[REPORT_ID]),
+					Report.STATUS.valueOf(values[STATUS_ID]));
+			Response response = Response.getResponse("update" + code);
+//			response.setCode(code);
+			return response;
+		}
+	}
+
+	public static class Assign extends Request {
 		private static int REPORT_ID = 0, USER_ID = 1;
 		private String[] values = new String[2];
-		
-		private Assign() throws IOException{
-			BufferedReader reader  = new BufferedReader(new InputStreamReader(System.in));
-			String[] menus = {"Report Id", "User Id"};
+
+		private Assign() throws IOException {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+			String[] menus = { "Report Id", "User Id" };
 			for (int i = 0; i < menus.length; i++) {
 				System.out.printf("\n\tEnter %s:>", menus[i]);
 				values[i] = reader.readLine();
 			}
 		}
-		
+
 		@Override
 		public Response process(Database database) throws NumberFormatException, IOException {
 			int code = database.assign(Integer.parseInt(values[REPORT_ID]), values[USER_ID]);
@@ -72,19 +123,26 @@ public abstract class Request implements Serializable {
 		}
 	}
 
-	public static class View extends Request implements Formatter{
+	public static class View extends Request implements Formatter {
 		private String res;
 		private int code = -1; // 1 - Assigned, 1 - Unassigned
-		
-		private View() throws IOException{
-			String[] menus = {"Reports", "Users"};
+
+		private View() throws IOException {
+			String[] menus = { "Reports", "Users" };
 			System.out.printf(getHeaderAsString());
 			System.out.printf(getOptionsAsString(menus, 1));
 			BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 			try {
 				int value = -1;
+				String valString = null;
 				do {
-					value = Integer.parseInt(reader.readLine().trim());
+					try {
+						valString = reader.readLine().trim();
+						value = Integer.parseInt(valString);
+					} catch (NumberFormatException nfe) {
+						System.out.format("Invalid Option '%s' Entered%s", valString, getSelectionsAsString(menus));
+						continue;
+					}
 					if (hasCancelOption() && (value == menus.length + 1)) {
 						throw new IOException("Connection Terminated");
 					}
@@ -94,23 +152,30 @@ public abstract class Request implements Serializable {
 					}
 				} while (value < 1 || value > menus.length);
 				res = menus[value - 1];
-				if(res.equals("Reports")) {
-					String[] subMenus = {"All", "Unassigned"};
+				if (res.equals("Reports")) {
+					String[] subMenus = { "All", "Unassigned" };
 					System.out.printf("\t\tView Reports");
 					System.out.printf(getOptionsAsString(subMenus, 2));
 					do {
-						value = Integer.parseInt(reader.readLine().trim());
+						try {
+							valString = reader.readLine().trim();
+							value = Integer.parseInt(valString);
+						} catch (NumberFormatException nfe) {
+							System.out.format("Invalid Option '%s' Entered%s", valString, getSelectionsAsString(subMenus));
+							continue;
+						}
 						if (hasCancelOption() && (value == subMenus.length + 1)) {
 							throw new IOException("Connection Terminated");
 						}
 						if (value < 1 || value > subMenus.length) {
-							System.out.format("\tInvalid Option '%d' Entered%s", value, getSelectionsAsString(subMenus, 2));
+							System.out.format("\tInvalid Option '%d' Entered%s", value,
+									getSelectionsAsString(subMenus, 2));
 							continue;
 						}
-					}while(value < 1 || value > menus.length);
+					} while (value < 1 || value > menus.length);
 					code = value - 1; // 0 - Reports, 1 - Users
 					System.out.println("Code : " + code);
-				} 
+				}
 				System.out.println("RES: " + res);
 			} catch (NumberFormatException nfe) {
 				nfe.printStackTrace();
@@ -121,16 +186,18 @@ public abstract class Request implements Serializable {
 
 		@Override
 		public Response process(Database database) throws IOException {
-			if(res.equalsIgnoreCase("reports")) {
-				return Response.getResponse(res + code);
-			} else if(res.equalsIgnoreCase("users")) {
+			if (res.equalsIgnoreCase("reports")) {
+				Response.Reports r = (Response.Reports)Response.getResponse(res + code);
+				
+				return null;
+			} else if (res.equalsIgnoreCase("users")) {
 				System.out.println("Process users requeest");
-				Response.Users u = (Response.Users)Response.getResponse(res);
+				Response.Users u = (Response.Users) Response.getResponse(res);
 				System.out.println(u);
 				u.loadUsers(database.getUsers());
-				
+
 				return u;
-			} 
+			}
 			throw new IllegalStateException("Unrecognized response " + res);
 		}
 
@@ -138,16 +205,18 @@ public abstract class Request implements Serializable {
 		public String getHeaderAsString() {
 			return "\tView";
 		}
+
 		@Override
 		public boolean hasCancelOption() {
 			return true;
 		}
 	}
+
 	public static class Login extends Request {
 		private static int ID = 0;
-		private String [] values = new String[1];
-		
-		private Login() throws IOException{
+		private String[] values = new String[1];
+
+		private Login() throws IOException {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 			String[] menus = { "ID" };
 			for (int i = 0; i < menus.length; i++) {
