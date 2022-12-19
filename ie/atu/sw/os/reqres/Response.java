@@ -54,6 +54,7 @@ public abstract class Response implements Serializable, Formatter {
 					continue;
 				}
 			} while (value < 1 || value > options.length);
+			System.out.println("VAlue %%%%%%%%%%%%:::::::: " + options[value-1]);
 			return Request.getRequest(options[value - 1]);
 		} catch (IOException e) {
 			e.printStackTrace();

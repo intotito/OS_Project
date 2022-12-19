@@ -32,10 +32,11 @@ public abstract class Request implements Serializable {
 			} else if (req.matches("^Assign.*")) {
 				return new Assign();
 			} else if (req.equalsIgnoreCase("view")) {
-				new View();
+				System.out.println("Wanted @@@@@@@@@@@@@");
+				return new View();
 			}
 		} catch (ViewMenuCancelException vmce) {
-
+			vmce.printStackTrace();
 		} catch (MenuCancelException mce) {
 			do {
 				try {
@@ -171,62 +172,70 @@ public abstract class Request implements Serializable {
 
 		private View() throws ViewMenuCancelException, MenuCancelException {
 			String[] menus = { "Reports", "Users" };
-			System.out.printf(getHeaderAsString());
-			System.out.printf(getOptionsAsString(menus, 1));
-			BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-			try {
-				int value = -1;
-				String valString = null;
-				do {
-					try {
-						valString = reader.readLine().trim();
-						value = Integer.parseInt(valString);
-					} catch (NumberFormatException nfe) {
-						System.out.format("Invalid Option '%s' Entered%s", valString, getSelectionsAsString(menus));
-						continue;
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-					if (hasCancelOption() && (value == menus.length + 1)) {
-						throw new MenuCancelException();
-					}
-					if (value < 1 || value > menus.length) {
-						System.out.format("\tInvalid Option '%d' Entered%s", value, getSelectionsAsString(menus, 1));
-						continue;
-					}
-				} while (value < 1 || value > menus.length);
-				res = menus[value - 1];
-				if (res.equals("Reports")) {
-					String[] subMenus = { "All", "Unassigned" };
-					System.out.printf("\t\tView Reports");
-					System.out.printf(getOptionsAsString(subMenus, 2));
+			out: do {
+				System.out.printf(getHeaderAsString());
+				System.out.printf(getOptionsAsString(menus, 1));
+				BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+				try {
+					int value = -1;
+					String valString = null;
 					do {
 						try {
 							valString = reader.readLine().trim();
 							value = Integer.parseInt(valString);
 						} catch (NumberFormatException nfe) {
-							System.out.format("Invalid Option '%s' Entered%s", valString,
-									getSelectionsAsString(subMenus));
+							System.out.format("\tInvalid Option '%s' Entered%s", valString,
+									getSelectionsAsString(menus, 1));
 							continue;
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
-						if (hasCancelOption() && (value == subMenus.length + 1)) {
-							throw new ViewMenuCancelException();
+						if (hasCancelOption() && (value == menus.length + 1)) {
+							throw new MenuCancelException();
 						}
-						if (value < 1 || value > subMenus.length) {
+						if (value < 1 || value > menus.length) {
 							System.out.format("\tInvalid Option '%d' Entered%s", value,
-									getSelectionsAsString(subMenus, 2));
+									getSelectionsAsString(menus, 1));
 							continue;
 						}
 					} while (value < 1 || value > menus.length);
-					code = value - 1; // 0 - Reports, 1 - Users
-					System.out.println("Code : " + code);
+					res = menus[value - 1];
+					if (res.equals("Reports")) {
+						String[] subMenus = { "All", "Unassigned" };
+						System.out.printf("\t\tView Reports");
+						System.out.printf(getOptionsAsString(subMenus, 2));
+						do {
+							try {
+								valString = reader.readLine().trim();
+								value = Integer.parseInt(valString);
+							} catch (NumberFormatException nfe) {
+								System.out.format("Invalid Option '%s' Entered%s", valString,
+										getSelectionsAsString(subMenus));
+								continue;
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+							if (hasCancelOption() && (value == subMenus.length + 1)) {
+								// throw new ViewMenuCancelException();
+								value = -1;
+								continue out;
+							}
+							if (value < 1 || value > subMenus.length) {
+								System.out.format("\tInvalid Option '%d' Entered%s", value,
+										getSelectionsAsString(subMenus, 2));
+								continue;
+							}
+						} while (value < 1 || value > menus.length);
+						code = value - 1; // 0 - Reports, 1 - Users
+						System.out.println("Code : " + code);
+					}
+					System.out.println("RES: " + res);
+					break;
+				} catch (NumberFormatException nfe) {
+					nfe.printStackTrace();
 				}
-				System.out.println("RES: " + res);
-			} catch (NumberFormatException nfe) {
-				nfe.printStackTrace();
-			}
+				
+			} while (true);
 			/*
 			 * catch (IOException e) { e.printStackTrace(); }
 			 */
@@ -234,6 +243,7 @@ public abstract class Request implements Serializable {
 
 		@Override
 		public Response process(Database database) throws IOException {
+			System.out.println("Kedu IJE");
 			if (res.equalsIgnoreCase("reports")) {
 				Response.Reports r = (Response.Reports) Response.getResponse(res + code);
 				System.out.println("Process reports request");
@@ -264,7 +274,7 @@ public abstract class Request implements Serializable {
 
 		@Override
 		public String getDefaultCancelString() {
-			return "Logout";
+			return "Back";
 		}
 	}
 
