@@ -7,18 +7,19 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 import ie.atu.sw.os.exception.MenuCancelException;
+import ie.atu.sw.os.exception.MyException;
 import ie.atu.sw.os.reqres.Request;
 import ie.atu.sw.os.reqres.Response;
 import ie.atu.sw.os.server.Server;
 
-public class Client implements Runnable{
+public class Client implements Runnable {
 	public Client() {
 	}
-	
+
 	public void startService() {
 		new Thread(this).start();
 	}
-	
+
 	@Override
 	public void run() {
 		try {
@@ -27,28 +28,39 @@ public class Client implements Runnable{
 			Request request = null;
 			ObjectOutputStream os = new ObjectOutputStream(socket.getOutputStream());
 			ObjectInputStream is = new ObjectInputStream(socket.getInputStream());
+			out:
 			do {
-				response = (Response)is.readObject();
-				try {
-					request = response.process();
-				} catch (MenuCancelException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				response = (Response) is.readObject();
+				do {
+					try {
+						System.out.println("Response: " + response);
+						request = response.process();
+					} catch (MenuCancelException e) {
+						e.printStackTrace();
+						response = null;
+						response = Response.getResponse("connect0");
+						continue;
+					} catch(MyException mye) {
+						// quit
+						socket.close();
+						break out;
+					}
+					break;
+				} while (true);
 				os.writeObject(request);
 				os.flush();
-			}while(true);
+			} while (true);
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
-		} catch(NullPointerException npe) {
+		} catch (NullPointerException npe) {
 			npe.printStackTrace();
 		}
 	}
-	
+
 	public static void main(String[] args) {
 		Client client = new Client();
 		client.startService();

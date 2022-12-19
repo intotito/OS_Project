@@ -4,11 +4,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.List;
 
 import ie.atu.sw.os.User;
 import ie.atu.sw.os.data.Report;
 import ie.atu.sw.os.exception.MenuCancelException;
+import ie.atu.sw.os.exception.MyException;
+import ie.atu.sw.os.exception.ViewMenuCancelException;
 import ie.atu.sw.os.server.Server;
 
 public abstract class Response implements Serializable, Formatter {
@@ -18,11 +21,18 @@ public abstract class Response implements Serializable, Formatter {
 	protected void buildMessage() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(getHeaderAsString());
+		Arrays.stream(options).forEach(System.out::println);
+
 		sb.append(getOptionsAsString(options));
 		setMessage(sb.toString());
 	}
+	
+	public MyException getException() {
+		return new MenuCancelException();
+	}
 
-	public Request process() throws MenuCancelException{
+	public Request process() throws MyException{
+		System.out.println(this.getClass().getName() + " Calling process");
 		System.out.print(getMessage());
 		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 		try {
@@ -37,7 +47,7 @@ public abstract class Response implements Serializable, Formatter {
 					continue;
 				}
 				if (hasCancelOption() && (value == options.length + 1)) {
-					throw new MenuCancelException();
+					throw getException();
 				}
 				if (value < 1 || value > options.length) {
 					System.out.format("Invalid Option '%d' Entered%s", value, getSelectionsAsString(options));
@@ -80,12 +90,14 @@ public abstract class Response implements Serializable, Formatter {
 		int code;
 		private Connect(int code ) {
 			this.code = code;
+			System.out.println("Connect code: " + code);
 			String[][] optionSuite = {
 					{"Register", "Login"},
 					Server.MAIN_MENU,
 					{ "Reports", "Users" }
 			};
-			options = optionSuite[code];
+			this.options = optionSuite[code];
+			Arrays.stream(options).forEach(System.out::println);
 			buildMessage();
 		}
 
@@ -102,6 +114,10 @@ public abstract class Response implements Serializable, Formatter {
 		@Override
 		public boolean hasCancelOption() {
 			return true;
+		}
+		@Override
+		public MyException getException() {
+			return code == 0 ? (new MyException() {}) : (code == 1 ? new MenuCancelException() : new ViewMenuCancelException());
 		}
 	}
 
@@ -160,7 +176,7 @@ public abstract class Response implements Serializable, Formatter {
 		}
 
 		@Override
-		public Request process() throws MenuCancelException {
+		public Request process() throws MyException {
 			buildMessage();
 			// System.out.println(showUsers());
 			return super.process();
@@ -187,9 +203,9 @@ public abstract class Response implements Serializable, Formatter {
 		}
 
 		@Override
-		public Request process() throws MenuCancelException {
+		public Request process() throws MyException {
 			if (status == 1) { // Login Successful
-				return super.process();
+				return Response.getResponse("connect1").process();
 			} else {
 				System.out.print(getMessage());
 				return Response.getResponse("connect0").process();
@@ -332,9 +348,9 @@ public abstract class Response implements Serializable, Formatter {
 		}
 
 		@Override
-		public Request process() throws MenuCancelException {
+		public Request process() throws MyException {
 			if (status == 0) {
-				return super.process();
+				return Response.getResponse("connect1").process();
 			} else {
 				System.out.print(getMessage());
 				return Response.getResponse("connect0").process();

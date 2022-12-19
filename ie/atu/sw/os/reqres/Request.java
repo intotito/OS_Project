@@ -10,6 +10,7 @@ import ie.atu.sw.os.User;
 import ie.atu.sw.os.data.Database;
 import ie.atu.sw.os.data.Report;
 import ie.atu.sw.os.exception.MenuCancelException;
+import ie.atu.sw.os.exception.MyException;
 import ie.atu.sw.os.exception.ViewMenuCancelException;
 
 public abstract class Request implements Serializable {
@@ -36,7 +37,14 @@ public abstract class Request implements Serializable {
 		} catch (ViewMenuCancelException vmce) {
 
 		} catch (MenuCancelException mce) {
-
+			do {
+				try {
+					return Response.getResponse("connect1").process();
+				} catch (MyException e) {
+					e.printStackTrace();
+				}
+				break;
+			} while (true);
 		}
 		throw new IllegalArgumentException(String.format("'%s' Requested Not Supported", req));
 	}
@@ -45,7 +53,7 @@ public abstract class Request implements Serializable {
 		private static int NAME = 0, PLATFORM = 1, DESCR = 2;
 		private String[] values = new String[5];
 
-		private AddReport()  {
+		private AddReport() {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 			String[] menus = { "Application Name", "Platform", "Bug Description" };
 			for (int i = 0; i < menus.length; i++) {
@@ -70,7 +78,7 @@ public abstract class Request implements Serializable {
 		private static int REPORT_ID = 0, STATUS_ID = 1;
 		private String[] values = new String[2];
 
-		private Update() throws MenuCancelException{
+		private Update() throws MenuCancelException {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 			System.out.printf("\n\tEnter %s:>", "Report Id");
 			try {
@@ -90,7 +98,7 @@ public abstract class Request implements Serializable {
 				} catch (NumberFormatException nfe) {
 					System.out.format("Invalid Option '%s' Entered%s", valString, getSelectionsAsString(menus));
 					continue;
-				} catch(IOException ie) {
+				} catch (IOException ie) {
 					ie.printStackTrace();
 				}
 				if (hasCancelOption() && (value == menus.length + 1)) {

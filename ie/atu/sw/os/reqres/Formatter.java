@@ -51,7 +51,7 @@ public interface Formatter {
 				"";
 	}
 	public default boolean hasCancelOption() {
-		return false;
+		return true;
 	}
 	
 	public default String getDefaultCancelString() {
