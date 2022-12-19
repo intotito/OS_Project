@@ -6,6 +6,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import ie.atu.sw.os.exception.MenuCancelException;
 import ie.atu.sw.os.reqres.Request;
 import ie.atu.sw.os.reqres.Response;
 import ie.atu.sw.os.server.Server;
@@ -28,9 +29,12 @@ public class Client implements Runnable{
 			ObjectInputStream is = new ObjectInputStream(socket.getInputStream());
 			do {
 				response = (Response)is.readObject();
-				System.out.println("Did we connect? " + response);
-				request = response.process();
-				System.out.println("PRocessing" + request);
+				try {
+					request = response.process();
+				} catch (MenuCancelException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				os.writeObject(request);
 				os.flush();
 			}while(true);

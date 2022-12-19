@@ -31,9 +31,9 @@ public class Database {
 		return users.stream().collect(Collectors.toList());
 	}
 	
-	public List<Report> getReports(){
-	//	System.out.println(records.stream().collect(Collectors.toList()));
-		return records.stream().collect(Collectors.toList());
+	public List<Report> getReports(int code){
+		System.out.println(records.stream().collect(Collectors.toList()));
+		return records.stream().filter((r) -> (code == 0 ? true : r.isAssigned())).collect(Collectors.toList());
 	}
 
 	private void load(String FILE_PATH, Consumer<String> consumer) throws IOException {

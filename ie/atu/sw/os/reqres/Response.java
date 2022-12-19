@@ -8,7 +8,7 @@ import java.util.List;
 
 import ie.atu.sw.os.User;
 import ie.atu.sw.os.data.Report;
-import ie.atu.sw.os.reqres.Response.Reports.Users;
+import ie.atu.sw.os.exception.MenuCancelException;
 import ie.atu.sw.os.server.Server;
 
 public abstract class Response implements Serializable, Formatter {
@@ -22,7 +22,7 @@ public abstract class Response implements Serializable, Formatter {
 		setMessage(sb.toString());
 	}
 
-	public Request process() {
+	public Request process() throws MenuCancelException{
 		System.out.print(getMessage());
 		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 		try {
@@ -37,7 +37,7 @@ public abstract class Response implements Serializable, Formatter {
 					continue;
 				}
 				if (hasCancelOption() && (value == options.length + 1)) {
-					throw new IOException("Connection Terminated");
+					throw new MenuCancelException();
 				}
 				if (value < 1 || value > options.length) {
 					System.out.format("Invalid Option '%d' Entered%s", value, getSelectionsAsString(options));
@@ -52,8 +52,8 @@ public abstract class Response implements Serializable, Formatter {
 	}
 
 	public static Response getResponse(String res) {
-		if (res.equalsIgnoreCase("connect")) {
-			return new Connect();
+		if (res.toLowerCase().matches("connect\\d")) {
+			return new Connect(Integer.parseInt(res.substring("connect".length())));
 		} else if (res.toLowerCase().matches("register\\d")) {
 			return new Register(Integer.parseInt(res.substring("register".length())));
 		} else if (res.toLowerCase().matches("login\\d")) {
@@ -63,14 +63,12 @@ public abstract class Response implements Serializable, Formatter {
 		} else if (res.toLowerCase().matches("assign\\d")) {
 			return new Assign(Integer.parseInt(res.substring("assign".length())));
 		} else if (res.toLowerCase().matches("update\\d")) {
-			return new Update(Integer.parseInt(res.substring("assign".length())));
+			return new Update(Integer.parseInt(res.substring("update".length())));
 		} else if (res.toLowerCase().matches("users")) {
 			System.out.println("Will return new USers response");
 			var a = new Users();
 			System.out.println("Check this: " + a);
 			return a;
-		} else if (res.toLowerCase().matches("register\\d")) {
-
 		} else if (res.toLowerCase().matches("reports\\d")) {
 			return new Reports(Integer.parseInt(res.substring("reports".length())));
 		}
@@ -78,8 +76,16 @@ public abstract class Response implements Serializable, Formatter {
 	}
 
 	public static class Connect extends Response {
-		private Connect() {
-			options = new String[] { "Register", "Login" };
+		public static final int REG_LOGING = 0, MAIN_MENU = 1, VIEW_MENU = 2;
+		int code;
+		private Connect(int code ) {
+			this.code = code;
+			String[][] optionSuite = {
+					{"Register", "Login"},
+					Server.MAIN_MENU,
+					{ "Reports", "Users" }
+			};
+			options = optionSuite[code];
 			buildMessage();
 		}
 
@@ -90,7 +96,7 @@ public abstract class Response implements Serializable, Formatter {
 
 		@Override
 		public String getDefaultCancelString() {
-			return "Exit";
+			return new String[]{"Exit", "Logout", "Cancel"}[code];
 		}
 
 		@Override
@@ -106,20 +112,25 @@ public abstract class Response implements Serializable, Formatter {
 		private Reports(int code) {
 			this.code = code;
 			options = Server.MAIN_MENU;
-			buildMessage();
+//			System.out.println("Construction finished");
+//			buildMessage();
+			
 		}
 
 		@Override
 		public String getHeaderAsString() {
-			return code == 0 ? "All Reports" : "Unassigned Reports";
+			return String.format("%s\n%s", code == 0 ? "All Reports" : "Unassigned Reports", showReports());
 		}
 
 		private String showReports() {
 			return reports.toString();
 		}
 		
-		private void loadReports(List<Report> reports) {
-			reports.stream().map(Report
+		public void loadReports(List<Report> reports) {
+			System.out.println("Loading reports");
+			reports.stream().map(Report::toString).forEach(System.out::println);
+			this.reports = reports;
+			buildMessage();
 		}
 	}
 
@@ -149,7 +160,7 @@ public abstract class Response implements Serializable, Formatter {
 		}
 
 		@Override
-		public Request process() {
+		public Request process() throws MenuCancelException {
 			buildMessage();
 			// System.out.println(showUsers());
 			return super.process();
@@ -176,18 +187,18 @@ public abstract class Response implements Serializable, Formatter {
 		}
 
 		@Override
-		public Request process() {
-			if (status == 1) {
+		public Request process() throws MenuCancelException {
+			if (status == 1) { // Login Successful
 				return super.process();
 			} else {
 				System.out.print(getMessage());
-				return Response.getResponse("connect").process();
+				return Response.getResponse("connect0").process();
 			}
 		}
 
 		@Override
 		public String getDefaultCancelString() {
-			return "Quit";
+			return "Exit";
 		}
 
 		@Override
@@ -218,7 +229,7 @@ public abstract class Response implements Serializable, Formatter {
 
 		@Override
 		public String getDefaultCancelString() {
-			return "Exit";
+			return "Cancel";
 		}
 
 		@Override
@@ -253,7 +264,7 @@ public abstract class Response implements Serializable, Formatter {
 
 		@Override
 		public String getDefaultCancelString() {
-			return "Exit";
+			return "Cancel";
 		}
 
 		@Override
@@ -321,12 +332,12 @@ public abstract class Response implements Serializable, Formatter {
 		}
 
 		@Override
-		public Request process() {
+		public Request process() throws MenuCancelException {
 			if (status == 0) {
 				return super.process();
 			} else {
 				System.out.print(getMessage());
-				return Response.getResponse("connect").process();
+				return Response.getResponse("connect0").process();
 			}
 		}
 

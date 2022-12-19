@@ -58,6 +58,11 @@ public class Report implements Savable, Serializable{
 	public int getId() {
 		return this.id;
 	}
+	
+	public boolean isAssigned() {
+		return !assignee.equals(" ");
+	}
+	
 	public void setAssignee(String assignee) {
 		this.assignee = assignee;
 	}

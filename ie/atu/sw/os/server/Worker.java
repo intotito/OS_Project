@@ -28,7 +28,7 @@ public class Worker extends Thread {
 	public void run() {
 		try {
 			System.out.println("Worker running..");
-			Response response = Response.getResponse("connect");
+			Response response = Response.getResponse("connect0");
 			os.writeObject(response);
 			while (true) {
 				Request request = (Request) is.readObject();
