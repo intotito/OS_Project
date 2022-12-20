@@ -8,6 +8,7 @@ import java.net.UnknownHostException;
 
 import ie.atu.sw.os.exception.MenuCancelException;
 import ie.atu.sw.os.exception.MyException;
+import ie.atu.sw.os.reqres.Formatter;
 import ie.atu.sw.os.reqres.Request;
 import ie.atu.sw.os.reqres.Response;
 import ie.atu.sw.os.server.Server;
@@ -33,7 +34,7 @@ public class Client implements Runnable {
 				response = (Response) is.readObject();
 				do {
 					try {
-						System.out.println("Response: " + response);
+//						System.out.println("Response: " + response);
 						request = response.process();
 					} catch (MenuCancelException e) {
 						e.printStackTrace();
@@ -63,6 +64,7 @@ public class Client implements Runnable {
 
 	public static void main(String[] args) {
 		Client client = new Client();
+		Formatter.printBoxedTitled("     Bug Tracker     ", "       Client       ", 2, '+', '|', '-', 1);
 		client.startService();
 	}
 }

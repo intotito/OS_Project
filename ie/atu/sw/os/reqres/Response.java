@@ -11,7 +11,6 @@ import ie.atu.sw.os.User;
 import ie.atu.sw.os.data.Report;
 import ie.atu.sw.os.exception.MenuCancelException;
 import ie.atu.sw.os.exception.MyException;
-import ie.atu.sw.os.exception.ViewMenuCancelException;
 import ie.atu.sw.os.server.Server;
 
 public abstract class Response implements Serializable, Formatter {
@@ -20,19 +19,19 @@ public abstract class Response implements Serializable, Formatter {
 
 	protected void buildMessage() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(getHeaderAsString());
+//		sb.append(getHeaderAsString());
 		Arrays.stream(options).forEach(System.out::println);
 
 		sb.append(getOptionsAsString(options));
 		setMessage(sb.toString());
 	}
-	
+
 	public MyException getException() {
 		return new MenuCancelException();
 	}
 
-	public Request process() throws MyException{
-		System.out.println(this.getClass().getName() + " Calling process");
+	public Request process() throws MyException {
+		// System.out.println(this.getClass().getName() + " Calling process");
 		System.out.print(getMessage());
 		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 		try {
@@ -54,7 +53,7 @@ public abstract class Response implements Serializable, Formatter {
 					continue;
 				}
 			} while (value < 1 || value > options.length);
-			System.out.println("VAlue %%%%%%%%%%%%:::::::: " + options[value-1]);
+			System.out.println("VAlue %%%%%%%%%%%%:::::::: " + options[value - 1]);
 			return Request.getRequest(options[value - 1]);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -89,14 +88,11 @@ public abstract class Response implements Serializable, Formatter {
 	public static class Connect extends Response {
 		public static final int REG_LOGING = 0, MAIN_MENU = 1, VIEW_MENU = 2;
 		int code;
-		private Connect(int code ) {
+
+		private Connect(int code) {
 			this.code = code;
-			System.out.println("Connect code: " + code);
-			String[][] optionSuite = {
-					{"Register", "Login"},
-					Server.MAIN_MENU,
-					{ "Reports", "Users" }
-			};
+//			System.out.println("Connect code: " + code);
+			String[][] optionSuite = { { "Register", "Login" }, Server.MAIN_MENU, { "Reports", "Users" } };
 			this.options = optionSuite[code];
 			Arrays.stream(options).forEach(System.out::println);
 			buildMessage();
@@ -109,17 +105,26 @@ public abstract class Response implements Serializable, Formatter {
 
 		@Override
 		public String getDefaultCancelString() {
-			return new String[]{"Exit", "Logout", "Cancel"}[code];
+			return new String[] { "Exit", "Logout", "Cancel" }[code];
 		}
 
 		@Override
 		public boolean hasCancelOption() {
 			return true;
 		}
+
 		@Override
 		public MyException getException() {
 			System.out.println("My code: " + code);
-			return code == 0 ? (new MyException() {}) : new MenuCancelException();
+			return code == 0 ? (new MyException() {
+			}) : new MenuCancelException();
+		}
+
+		@Override
+		public Request process() throws MyException {
+			Formatter.printBoxed(code == 0 ? ("     MENU     ") : (code == 1 ? ("     MAIN MENU     ") : ("   VIEW     ")), 0, '+', '|', '-');
+
+			return super.process();
 		}
 	}
 
@@ -132,7 +137,7 @@ public abstract class Response implements Serializable, Formatter {
 			options = Server.MAIN_MENU;
 //			System.out.println("Construction finished");
 //			buildMessage();
-			
+
 		}
 
 		@Override
@@ -143,7 +148,7 @@ public abstract class Response implements Serializable, Formatter {
 		private String showReports() {
 			return reports.toString();
 		}
-		
+
 		public void loadReports(List<Report> reports) {
 			System.out.println("Loading reports");
 			reports.stream().map(Report::toString).forEach(System.out::println);

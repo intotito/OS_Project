@@ -7,6 +7,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 import ie.atu.sw.os.data.Database;
+import ie.atu.sw.os.reqres.Formatter;
 
 public class Server implements Runnable {
 	private static final int STATUS_STARTING = 0, STATUS_RUNNING = 1, STATUS_STOPPED = 2;
@@ -42,6 +43,7 @@ public class Server implements Runnable {
 
 	public static void main(String[] args) throws IOException {
 		Server server = new Server();
+		Formatter.printBoxedTitled("     Bug Tracker     ", "       Server       ", 2, '+', '|', '-', 1);
 		server.startService();
 	}
 
