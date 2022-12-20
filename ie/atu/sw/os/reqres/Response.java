@@ -20,9 +20,9 @@ public abstract class Response implements Serializable, Formatter {
 	protected void buildMessage() {
 		StringBuilder sb = new StringBuilder();
 //		sb.append(getHeaderAsString());
-		Arrays.stream(options).forEach(System.out::println);
+//		Arrays.stream(options).forEach(System.out::println);
 
-		sb.append(getOptionsAsString(options));
+		sb.append(getStandardOptionsAsString(options, 0));
 		setMessage(sb.toString());
 	}
 
@@ -53,7 +53,7 @@ public abstract class Response implements Serializable, Formatter {
 					continue;
 				}
 			} while (value < 1 || value > options.length);
-			System.out.println("VAlue %%%%%%%%%%%%:::::::: " + options[value - 1]);
+			// System.out.println("VAlue %%%%%%%%%%%%:::::::: " + options[value - 1]);
 			return Request.getRequest(options[value - 1]);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -75,9 +75,9 @@ public abstract class Response implements Serializable, Formatter {
 		} else if (res.toLowerCase().matches("update\\d")) {
 			return new Update(Integer.parseInt(res.substring("update".length())));
 		} else if (res.toLowerCase().matches("users")) {
-			System.out.println("Will return new USers response");
+			// System.out.println("Will return new USers response");
 			var a = new Users();
-			System.out.println("Check this: " + a);
+			// System.out.println("Check this: " + a);
 			return a;
 		} else if (res.toLowerCase().matches("reports\\d")) {
 			return new Reports(Integer.parseInt(res.substring("reports".length())));
@@ -94,7 +94,7 @@ public abstract class Response implements Serializable, Formatter {
 //			System.out.println("Connect code: " + code);
 			String[][] optionSuite = { { "Register", "Login" }, Server.MAIN_MENU, { "Reports", "Users" } };
 			this.options = optionSuite[code];
-			Arrays.stream(options).forEach(System.out::println);
+			// Arrays.stream(options).forEach(System.out::println);
 			buildMessage();
 		}
 
@@ -122,7 +122,9 @@ public abstract class Response implements Serializable, Formatter {
 
 		@Override
 		public Request process() throws MyException {
-			Formatter.printBoxed(code == 0 ? ("     MENU     ") : (code == 1 ? ("     MAIN MENU     ") : ("   VIEW     ")), 0, '+', '|', '-');
+			Formatter.printBoxed(
+					code == 0 ? ("     MENU     ") : (code == 1 ? ("     MAIN MENU     ") : ("   VIEW     ")), 0, '+',
+					'|', '-');
 
 			return super.process();
 		}
@@ -178,7 +180,7 @@ public abstract class Response implements Serializable, Formatter {
 		}
 
 		private String showUsers() {
-			System.out.println("How's calling me?");
+//			System.out.println("How's calling me?");
 			return users.toString();
 		}
 
@@ -195,7 +197,7 @@ public abstract class Response implements Serializable, Formatter {
 
 		private Login(int status) {
 			this.status = status;
-			System.out.println("Attempted Login Successful with: " + status);
+			// System.out.println("Attempted Login Successful with: " + status);
 			if (this.status == 1) {
 				options = Server.MAIN_MENU;
 				buildMessage();
@@ -212,9 +214,11 @@ public abstract class Response implements Serializable, Formatter {
 		@Override
 		public Request process() throws MyException {
 			if (status == 1) { // Login Successful
+				Formatter.printBoxed("  Login Successfull  ", 1, '+', '|', '-');
 				return Response.getResponse("connect1").process();
 			} else {
-				System.out.print(getMessage());
+				// System.out.print(getMessage());
+				Formatter.printError("Login Unsuccessfull: Invalid user Id", 1);
 				return Response.getResponse("connect0").process();
 			}
 		}
@@ -252,7 +256,7 @@ public abstract class Response implements Serializable, Formatter {
 
 		@Override
 		public String getDefaultCancelString() {
-			return "Cancel";
+			return "Logout";
 		}
 
 		@Override
@@ -268,16 +272,7 @@ public abstract class Response implements Serializable, Formatter {
 		private Assign(int code) {
 			this.code = code;
 			options = Server.MAIN_MENU;
-			if (this.code == 0) {
-				buildMessage();
-			} else if (this.code == 2) {
-				setMessage("Report doesn't exist!" + getOptionsAsString(options));
-			} else if (this.code == 1) {
-				setMessage("Invalid user name!" + getOptionsAsString(options));
-			} else {
-				throw new IllegalArgumentException("Unknwon status code " + code);
-			}
-
+			buildMessage();
 		}
 
 		@Override
@@ -287,12 +282,25 @@ public abstract class Response implements Serializable, Formatter {
 
 		@Override
 		public String getDefaultCancelString() {
-			return "Cancel";
+			return "Logout";
 		}
 
 		@Override
 		public boolean hasCancelOption() {
 			return true;
+		}
+
+		@Override
+		public Request process() throws MyException {
+			String s = code == 0 ? ("Report Assigned Successfully")
+					: (code == 1 ? ("Invalid User name") : ("Report does not exist"));
+			if (code == 0) {
+				Formatter.printBoxed(s, 1, '+', '|', '-');
+			} else {
+				Formatter.printError(s, 1);
+			}
+			Formatter.printBoxed("     MAIN MENU     ", 0, '+', '|', '-');
+			return super.process();
 		}
 	}
 
@@ -318,6 +326,13 @@ public abstract class Response implements Serializable, Formatter {
 		@Override
 		public boolean hasCancelOption() {
 			return true;
+		}
+
+		@Override
+		public Request process() throws MyException {
+			Formatter.printBoxedTitled("Report Added Successfully", String.format("ID: '%d'", id), 1, '+', '|', '-', 1);
+			Formatter.printBoxed("     MAIN MENU     ", 0, '+', '|', '-');
+			return super.process();
 		}
 	}
 
@@ -357,9 +372,14 @@ public abstract class Response implements Serializable, Formatter {
 		@Override
 		public Request process() throws MyException {
 			if (status == 0) {
+				Formatter.printBoxed("    Registration Successfull   ", 1, '+', '|', '-');
 				return Response.getResponse("connect1").process();
 			} else {
-				System.out.print(getMessage());
+//				System.out.print(getMessage());
+				String s = status == 1 ? ("Registration Failed: Email Address already exists")
+						: (status == 2 ? ("Registration Failed: Id already exists")
+								: ("Registration Failed: Id and Email already exists"));
+				Formatter.printError(s, 1);
 				return Response.getResponse("connect0").process();
 			}
 		}

@@ -3,6 +3,43 @@ package ie.atu.sw.os.reqres;
 import java.util.stream.IntStream;
 
 public interface Formatter {
+	
+	public default String getStandardOptionsAsString(String[] options, int indent){
+		StringBuilder sb = new StringBuilder("\n");
+
+		for(int i = 0; i < (options.length * 2); i++){
+			IntStream.range(0, indent).forEach(j -> sb.append('\t'));
+			if(i % 2 == 1){
+				sb.append("+---+\n");
+			} else {
+				sb.append(String.format("%c %d %c%s\n", '|', (i + 1) / 2 + 1, '|', options[i / 2]));
+			}
+		}
+		sb.append(getStandardCancelOptionAsString(options, indent));
+		sb.append(getStandardSelectionAsString(options, indent));
+		return sb.toString();
+	}
+
+	public default String getStandardSelectionAsString(String[] options, int indent){
+		StringBuilder sb = new StringBuilder();
+		IntStream.range(0, indent).forEach(j -> sb.append('\t'));
+		sb.append(String.format("%cSelect Options[%d-%d]> ", '|', 1, options.length + (hasCancelOption() ? 1 : 0)));
+		return sb.toString();
+	}
+	
+	public default String getStandardCancelOptionAsString(String[] options, int indent) {
+		StringBuffer sb = new StringBuffer();
+		IntStream.range(0, indent).forEach(j -> sb.append('\t'));
+		IntStream.range(0, 2).forEach(i -> {
+			if(i % 2 == 0) {
+				sb.append(String.format("%c %d %c%s\n", '|', options.length + 1, '|', getDefaultCancelString()));
+			} else {
+				sb.append("+---+\n");
+			}
+			});
+		return sb.toString();
+	}
+	
 	public default String getSelectionsAsString(String[] options) {
 		return String.format("\nSelect Options[%d-%d]>", 1, options.length + (hasCancelOption() ? 1 : 0));
 	}
@@ -98,5 +135,9 @@ public interface Formatter {
 				}
 			}
 		}
+	}
+	
+	public static void printError(String msg, int indent){
+		printBoxedTitled("Error", msg, indent, '*', '*', '*', 1);
 	}
 }

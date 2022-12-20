@@ -19,7 +19,7 @@ public abstract class Request implements Serializable {
 	public abstract Response process(Database database) throws IOException;
 
 	public static Request getRequest(String req) throws IOException {
-		System.out.println("Attempting " + req);
+//		System.out.println("Attempting " + req);
 		try {
 			if (req.equalsIgnoreCase("register")) {
 				return new Register();
@@ -32,7 +32,7 @@ public abstract class Request implements Serializable {
 			} else if (req.matches("^Assign.*")) {
 				return new Assign();
 			} else if (req.equalsIgnoreCase("view")) {
-				System.out.println("Wanted @@@@@@@@@@@@@");
+//				System.out.println("Wanted @@@@@@@@@@@@@");
 				return new View();
 			}
 		} catch (ViewMenuCancelException vmce) {
@@ -93,9 +93,10 @@ public abstract class Request implements Serializable {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+			Formatter.printBoxed("Select Status", 1, '+', '|', '-');
 			String[] menus = Arrays.stream(Report.STATUS.values()).map(Enum::toString).toArray(String[]::new);
-			System.out.printf(getHeaderAsString());
-			System.out.printf(getOptionsAsString(menus, 1));
+	//		System.out.printf(getHeaderAsString());
+			System.out.printf(getStandardOptionsAsString(menus, 1));
 			int value = -1;
 			String valString = null;
 			do {
@@ -103,7 +104,9 @@ public abstract class Request implements Serializable {
 					valString = reader.readLine().trim();
 					value = Integer.parseInt(valString);
 				} catch (NumberFormatException nfe) {
-					System.out.format("Invalid Option '%s' Entered%s", valString, getSelectionsAsString(menus));
+	//				System.out.format("Invalid Option '%s' Entered%s", valString, getSelectionsAsString(menus));
+					Formatter.printError(String.format("Invalid Option '%s' Entered"), 1);
+					System.out.print(getStandardSelectionAsString(menus, 1));
 					continue;
 				} catch (IOException ie) {
 					ie.printStackTrace();
@@ -234,7 +237,7 @@ public abstract class Request implements Serializable {
 							}
 						} while (value < 1 || value > menus.length);
 						code = value - 1; // 0 - Reports, 1 - Users
-						System.out.println("Code : " + code);
+	//					System.out.println("Code : " + code);
 					}
 					System.out.println("RES: " + res);
 					break;
@@ -253,15 +256,15 @@ public abstract class Request implements Serializable {
 			System.out.println("Kedu IJE");
 			if (res.equalsIgnoreCase("reports")) {
 				Response.Reports r = (Response.Reports) Response.getResponse(res + code);
-				System.out.println("Process reports request");
+		//		System.out.println("Process reports request");
 
 				System.out.println(r);
 				r.loadReports(database.getReports(code));
 				return r;
 			} else if (res.equalsIgnoreCase("users")) {
-				System.out.println("Process users requeest");
+		//		System.out.println("Process users requeest");
 				Response.Users u = (Response.Users) Response.getResponse(res);
-				System.out.println(u);
+		//		System.out.println(u);
 				u.loadUsers(database.getUsers());
 
 				return u;
