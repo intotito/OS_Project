@@ -118,7 +118,8 @@ public abstract class Response implements Serializable, Formatter {
 		}
 		@Override
 		public MyException getException() {
-			return code == 0 ? (new MyException() {}) : (code == 1 ? new MenuCancelException() : new ViewMenuCancelException());
+			System.out.println("My code: " + code);
+			return code == 0 ? (new MyException() {}) : new MenuCancelException();
 		}
 	}
 

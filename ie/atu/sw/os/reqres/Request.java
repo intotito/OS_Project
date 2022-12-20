@@ -44,7 +44,13 @@ public abstract class Request implements Serializable {
 				} catch (MyException e) {
 					e.printStackTrace();
 				}
-				break;
+				try {
+					return Response.getResponse("connect0").process();
+				} catch (MyException e) {
+					e.printStackTrace();
+					throw new IOException("Connection Terminated");
+				}
+			//	break;
 			} while (true);
 		}
 		throw new IllegalArgumentException(String.format("'%s' Requested Not Supported", req));
@@ -209,8 +215,9 @@ public abstract class Request implements Serializable {
 								valString = reader.readLine().trim();
 								value = Integer.parseInt(valString);
 							} catch (NumberFormatException nfe) {
-								System.out.format("Invalid Option '%s' Entered%s", valString,
-										getSelectionsAsString(subMenus));
+								System.out.format("\t\tInvalid Option '%s' Entered%s", valString,
+										getSelectionsAsString(subMenus, 2));
+								value = -1;
 								continue;
 							} catch (IOException e) {
 								e.printStackTrace();
@@ -221,7 +228,7 @@ public abstract class Request implements Serializable {
 								continue out;
 							}
 							if (value < 1 || value > subMenus.length) {
-								System.out.format("\tInvalid Option '%d' Entered%s", value,
+								System.out.format("\t\tInvalid Option '%d' Entered%s", value,
 										getSelectionsAsString(subMenus, 2));
 								continue;
 							}
