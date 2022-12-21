@@ -54,13 +54,13 @@ public class Client implements Runnable {
 				os.flush();
 			} while (true);
 		} catch (UnknownHostException e) {
-			e.printStackTrace();
+		//	e.printStackTrace();
 		} catch (IOException e) {
-			e.printStackTrace();
+		//	e.printStackTrace();
 		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
+		//	e.printStackTrace();
 		} catch (NullPointerException npe) {
-			npe.printStackTrace();
+		//	npe.printStackTrace();
 		}
 	}
 

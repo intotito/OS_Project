@@ -74,7 +74,7 @@ public class Worker extends Thread {
 			
 		} finally {
 			Server.CONNECTIONS.decrementAndGet();
-			String[] values = {userId, 
+			String[] values = {userId == null ? "Anonymous" : userId, 
 					LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")),
 					"Terminate", "OK"
 					};

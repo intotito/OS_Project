@@ -33,7 +33,7 @@ public class Database {
 	
 	public List<Report> getReports(int code){ // 0 - All reportt, 1 - Assigned
 //		System.out.println(records.stream().collect(Collectors.toList()));
-		return records.stream().filter((r) -> (code == 0 ? true : r.isAssigned())).collect(Collectors.toList());
+		return records.stream().filter((r) -> (code == 0 ? true : !r.isAssigned())).collect(Collectors.toList());
 	}
 
 	private void load(String FILE_PATH, Consumer<String> consumer) throws IOException {

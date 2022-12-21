@@ -50,21 +50,25 @@ public abstract class Response implements Serializable, Formatter {
 					valString = reader.readLine().trim();
 					value = Integer.parseInt(valString);
 				} catch (NumberFormatException nfe) {
-					System.out.format("Invalid Option '%s' Entered%s", valString, getSelectionsAsString(options));
+			//		System.out.format("Invalid Option '%s' Entered%s", valString, getSelectionsAsString(options));
+					Formatter.printError(String.format("Invalid Option '%s' Entered", valString), 0);
+					System.out.print("\n" + getStandardSelectionAsString(options, 0));
 					continue;
 				}
 				if (hasCancelOption() && (value == options.length + 1)) {
 					throw getException();
 				}
 				if (value < 1 || value > options.length) {
-					System.out.format("Invalid Option '%d' Entered%s", value, getSelectionsAsString(options));
+		//			System.out.format("Invalid Option '%d' Entered%s", value, getSelectionsAsString(options));
+					Formatter.printError(String.format("Invalid Option '%d' Entered", value), 0);
+					System.out.print("\n" + getStandardSelectionAsString(options, 0));
 					continue;
 				}
 			} while (value < 1 || value > options.length);
 			// System.out.println("VAlue %%%%%%%%%%%%:::::::: " + options[value - 1]);
 			return Request.getRequest(options[value - 1]);
 		} catch (IOException e) {
-			e.printStackTrace();
+	//		e.printStackTrace();
 		}
 		throw new IllegalStateException("What went wrong");
 	}
@@ -124,7 +128,7 @@ public abstract class Response implements Serializable, Formatter {
 
 		@Override
 		public MyException getException() {
-			System.out.println("My code: " + code);
+	//		System.out.println("My code: " + code);
 			return code == 0 ? (new MyException() {
 			}) : new MenuCancelException();
 		}
