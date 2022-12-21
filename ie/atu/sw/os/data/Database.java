@@ -31,8 +31,8 @@ public class Database {
 		return users.stream().collect(Collectors.toList());
 	}
 	
-	public List<Report> getReports(int code){
-		System.out.println(records.stream().collect(Collectors.toList()));
+	public List<Report> getReports(int code){ // 0 - All reportt, 1 - Assigned
+//		System.out.println(records.stream().collect(Collectors.toList()));
 		return records.stream().filter((r) -> (code == 0 ? true : r.isAssigned())).collect(Collectors.toList());
 	}
 
@@ -75,6 +75,7 @@ public class Database {
 		int code = 0;
 		synchronized (records) {
 			report = records.stream().filter((r) -> r.getId() == reportId).findFirst().orElse(null);
+			System.out.println("Report is this for me assign: " + report);
 		}
 		if (report != null) {
 			synchronized (users) {
@@ -82,8 +83,11 @@ public class Database {
 			}
 			if (user != null) {
 				report.setAssignee(userId);
+				System.out.println("WIll set " + reportId + " for " + userId + report);
 				synchronized (records) {
 					saveToFile(records, REPORT_FILE);
+					records.clear();
+					load(REPORT_FILE, (s) -> records.add(new Report(s)));
 				}
 			} else {
 				code = 1;
@@ -99,11 +103,15 @@ public class Database {
 		Report report = null;
 		synchronized(records) {
 			report = records.stream().filter((r) -> r.getId() == reportId).findFirst().orElse(null);
+			System.out.println("Report is this for me update: " + report);
 		}
 		if(report != null) {
 			report.setStatus(status);
+			System.out.println("will set status " + report);
 			synchronized(records) {
 				saveToFile(records, REPORT_FILE);
+				records.clear();
+				load(REPORT_FILE, (s) -> records.add(new Report(s)));
 			}
 		} else {
 			code = 1;

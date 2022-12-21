@@ -1,15 +1,47 @@
 package ie.atu.sw.os.reqres;
 
+import java.util.function.Function;
 import java.util.stream.IntStream;
 
+import ie.atu.sw.os.data.Report;
+
 public interface Formatter {
-	
-	public default String getStandardOptionsAsString(String[] options, int indent){
+
+	public static void printTabular(String[] title, int numberOfValues, Function<Integer, String[]> supplier,
+			int[] ratios, int indent, char corners, char vEdge, char hEdge) {
+		final int rows = numberOfValues * 2 + 3;
+		final int cols = title.length;
+		final int unitWidth = 2;
+		final int[] WIDTHS = IntStream.range(0, title.length).map(index -> {
+			return ratios[index] * unitWidth;
+		}).toArray();
+//		final int WIDTH = IntStream.of(WIDTHS).sum() + title.length + 1;
+		for (int i = 0; i < rows; i++) {
+			IntStream.range(0, indent).forEach(index -> System.out.print('\t'));
+			System.out.printf("%c", i % 2 == 0 ? corners : vEdge);
+			String[] values = (i % 2 == 0 || i == 1) ? null : supplier.apply((i - 2) / 2);
+			for (int j = 0; j < cols; j++) {
+				if (i % 2 == 0) {
+					IntStream.range(0, WIDTHS[j]).forEach(index -> System.out.printf("%c", hEdge));
+					System.out.printf("%c", corners);
+				} else {
+					String s = (i == 1) ? title[j] : values[j].trim();
+					s = s.length() > WIDTHS[j] ? s.substring(0, WIDTHS[j] - 5) + "..." : s;
+					System.out.printf("%s%" + (WIDTHS[j] - s.length() + 1) + "c", s, vEdge);
+				}
+			}
+
+			System.out.print('\n');
+		}
+
+	}
+
+	public default String getStandardOptionsAsString(String[] options, int indent) {
 		StringBuilder sb = new StringBuilder("\n");
 
-		for(int i = 0; i < (options.length * 2); i++){
+		for (int i = 0; i < (options.length * 2); i++) {
 			IntStream.range(0, indent).forEach(j -> sb.append('\t'));
-			if(i % 2 == 1){
+			if (i % 2 == 1) {
 				sb.append("+---+\n");
 			} else {
 				sb.append(String.format("%c %d %c%s\n", '|', (i + 1) / 2 + 1, '|', options[i / 2]));
@@ -20,26 +52,27 @@ public interface Formatter {
 		return sb.toString();
 	}
 
-	public default String getStandardSelectionAsString(String[] options, int indent){
+	public default String getStandardSelectionAsString(String[] options, int indent) {
 		StringBuilder sb = new StringBuilder();
 		IntStream.range(0, indent).forEach(j -> sb.append('\t'));
 		sb.append(String.format("%cSelect Options[%d-%d]> ", '|', 1, options.length + (hasCancelOption() ? 1 : 0)));
 		return sb.toString();
 	}
-	
+
 	public default String getStandardCancelOptionAsString(String[] options, int indent) {
 		StringBuffer sb = new StringBuffer();
-		IntStream.range(0, indent).forEach(j -> sb.append('\t'));
+
 		IntStream.range(0, 2).forEach(i -> {
-			if(i % 2 == 0) {
+			IntStream.range(0, indent).forEach(j -> sb.append('\t'));
+			if (i % 2 == 0) {
 				sb.append(String.format("%c %d %c%s\n", '|', options.length + 1, '|', getDefaultCancelString()));
 			} else {
 				sb.append("+---+\n");
 			}
-			});
+		});
 		return sb.toString();
 	}
-	
+
 	public default String getSelectionsAsString(String[] options) {
 		return String.format("\nSelect Options[%d-%d]>", 1, options.length + (hasCancelOption() ? 1 : 0));
 	}
@@ -136,8 +169,8 @@ public interface Formatter {
 			}
 		}
 	}
-	
-	public static void printError(String msg, int indent){
+
+	public static void printError(String msg, int indent) {
 		printBoxedTitled("Error", msg, indent, '*', '*', '*', 1);
 	}
 }

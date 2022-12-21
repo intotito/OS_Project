@@ -105,8 +105,8 @@ public abstract class Request implements Serializable {
 					value = Integer.parseInt(valString);
 				} catch (NumberFormatException nfe) {
 	//				System.out.format("Invalid Option '%s' Entered%s", valString, getSelectionsAsString(menus));
-					Formatter.printError(String.format("Invalid Option '%s' Entered"), 1);
-					System.out.print(getStandardSelectionAsString(menus, 1));
+					Formatter.printError(String.format("Invalid Option '%s' Entered", valString), 1);
+					System.out.print("\n" + getStandardSelectionAsString(menus, 1));
 					continue;
 				} catch (IOException ie) {
 					ie.printStackTrace();
@@ -115,7 +115,9 @@ public abstract class Request implements Serializable {
 					throw new MenuCancelException();
 				}
 				if (value < 1 || value > menus.length) {
-					System.out.format("\tInvalid Option '%d' Entered%s", value, getSelectionsAsString(menus, 1));
+//					System.out.format("\tInvalid Option '%d' Entered%s", value, getSelectionsAsString(menus, 1));
+					Formatter.printError(String.format("Invalid Option '%d' Entered", value), 1);
+					System.out.print("\n" + getStandardSelectionAsString(menus, 1));
 					continue;
 				}
 			} while (value < 1 || value > menus.length);
@@ -182,8 +184,9 @@ public abstract class Request implements Serializable {
 		private View() throws ViewMenuCancelException, MenuCancelException {
 			String[] menus = { "Reports", "Users" };
 			out: do {
-				System.out.printf(getHeaderAsString());
-				System.out.printf(getOptionsAsString(menus, 1));
+//				System.out.printf(getHeaderAsString());
+				Formatter.printBoxed("   VIEW   ", 1, '+', '|', '-');
+				System.out.printf(getStandardOptionsAsString(menus, 1));
 				BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 				try {
 					int value = -1;
@@ -193,8 +196,10 @@ public abstract class Request implements Serializable {
 							valString = reader.readLine().trim();
 							value = Integer.parseInt(valString);
 						} catch (NumberFormatException nfe) {
-							System.out.format("\tInvalid Option '%s' Entered%s", valString,
-									getSelectionsAsString(menus, 1));
+//							System.out.format("\tInvalid Option '%s' Entered%s", valString,
+	///								getSelectionsAsString(menus, 1));
+							Formatter.printError(String.format("Invalid Option '%s' Entered", valString), 1);
+							System.out.print("\n" + getStandardSelectionAsString(menus, 1));
 							continue;
 						} catch (IOException e) {
 							e.printStackTrace();
@@ -203,23 +208,28 @@ public abstract class Request implements Serializable {
 							throw new MenuCancelException();
 						}
 						if (value < 1 || value > menus.length) {
-							System.out.format("\tInvalid Option '%d' Entered%s", value,
-									getSelectionsAsString(menus, 1));
+			//				System.out.format("\tInvalid Option '%d' Entered%s", value,
+				//					getSelectionsAsString(menus, 1));
+							Formatter.printError(String.format("Invalid Option '%d' Entered", value), 1);
+							System.out.print("\n" + getStandardSelectionAsString(menus, 1));
 							continue;
 						}
 					} while (value < 1 || value > menus.length);
 					res = menus[value - 1];
 					if (res.equals("Reports")) {
 						String[] subMenus = { "All", "Unassigned" };
-						System.out.printf("\t\tView Reports");
-						System.out.printf(getOptionsAsString(subMenus, 2));
+//						System.out.printf("\t\tView Reports");
+						Formatter.printBoxed("  View Reports  ", 2, '+', '|', '-');
+						System.out.printf(getStandardOptionsAsString(subMenus, 2));
 						do {
 							try {
 								valString = reader.readLine().trim();
 								value = Integer.parseInt(valString);
 							} catch (NumberFormatException nfe) {
-								System.out.format("\t\tInvalid Option '%s' Entered%s", valString,
-										getSelectionsAsString(subMenus, 2));
+	//							System.out.format("\t\tInvalid Option '%s' Entered%s", valString,
+		//								getSelectionsAsString(subMenus, 2));
+								Formatter.printError(String.format("Invalid Option '%s' Entered", valString), 2);
+								System.out.print("\n" + getStandardSelectionAsString(subMenus, 2));
 								value = -1;
 								continue;
 							} catch (IOException e) {
@@ -231,15 +241,17 @@ public abstract class Request implements Serializable {
 								continue out;
 							}
 							if (value < 1 || value > subMenus.length) {
-								System.out.format("\t\tInvalid Option '%d' Entered%s", value,
-										getSelectionsAsString(subMenus, 2));
+	//							System.out.format("\t\tInvalid Option '%d' Entered%s", value,
+		//								getSelectionsAsString(subMenus, 2));
+								Formatter.printError(String.format("Invalid Option '%d' Entered", value), 2);
+								System.out.print("\n" + getStandardSelectionAsString(subMenus, 2));
 								continue;
 							}
 						} while (value < 1 || value > menus.length);
 						code = value - 1; // 0 - Reports, 1 - Users
 	//					System.out.println("Code : " + code);
 					}
-					System.out.println("RES: " + res);
+		//			System.out.println("RES: " + res);
 					break;
 				} catch (NumberFormatException nfe) {
 					nfe.printStackTrace();

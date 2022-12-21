@@ -4,8 +4,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 
 import ie.atu.sw.os.User;
 import ie.atu.sw.os.data.Report;
@@ -17,12 +17,12 @@ public abstract class Response implements Serializable, Formatter {
 	private String message;
 	protected String[] options;
 
-	protected void buildMessage() {
+	protected void buildMessage(int indent) {
 		StringBuilder sb = new StringBuilder();
 //		sb.append(getHeaderAsString());
 //		Arrays.stream(options).forEach(System.out::println);
 
-		sb.append(getStandardOptionsAsString(options, 0));
+		sb.append(getStandardOptionsAsString(options, indent));
 		setMessage(sb.toString());
 	}
 
@@ -95,7 +95,7 @@ public abstract class Response implements Serializable, Formatter {
 			String[][] optionSuite = { { "Register", "Login" }, Server.MAIN_MENU, { "Reports", "Users" } };
 			this.options = optionSuite[code];
 			// Arrays.stream(options).forEach(System.out::println);
-			buildMessage();
+			buildMessage(0);
 		}
 
 		@Override
@@ -138,7 +138,7 @@ public abstract class Response implements Serializable, Formatter {
 			this.code = code;
 			options = Server.MAIN_MENU;
 //			System.out.println("Construction finished");
-//			buildMessage();
+			buildMessage(0);
 
 		}
 
@@ -152,10 +152,21 @@ public abstract class Response implements Serializable, Formatter {
 		}
 
 		public void loadReports(List<Report> reports) {
-			System.out.println("Loading reports");
-			reports.stream().map(Report::toString).forEach(System.out::println);
+//			System.out.println("Loading reports");
+//			reports.stream().map(Report::toString).forEach(System.out::println);
 			this.reports = reports;
-			buildMessage();
+			buildMessage(0);
+		}
+		@Override
+		public Request process() throws MyException {
+			String[] title = {"Id", "App. Name", "Platform", "Description", "Status", "Date", "Asignee"};
+			int[] ratios = {2, 6, 7, 15, 4, 7, 6};
+			Function<Integer, String[]> function = (i) -> {
+					return reports.get(i).asString().split(",");
+				};
+			Formatter.printTabular(title, reports.size(), function, ratios, 0, '+', '|', '-');
+			Formatter.printBoxed("     MAIN MENU     ", 0, '+', '|', '-');
+			return super.process();
 		}
 	}
 
@@ -165,7 +176,7 @@ public abstract class Response implements Serializable, Formatter {
 		private Users() {
 
 			options = Server.MAIN_MENU;
-
+		//	buildMessage(0);
 		}
 
 		@Override
@@ -174,8 +185,8 @@ public abstract class Response implements Serializable, Formatter {
 		}
 
 		public void loadUsers(List<User> users) {
-			System.out.println("Loading Users");
-			users.stream().map(User::toString).forEach(System.out::println);
+	//		System.out.println("Loading Users");
+	//		users.stream().map(User::toString).forEach(System.out::println);
 			this.users = users;
 		}
 
@@ -186,8 +197,14 @@ public abstract class Response implements Serializable, Formatter {
 
 		@Override
 		public Request process() throws MyException {
-			buildMessage();
-			// System.out.println(showUsers());
+			buildMessage(0);
+			String[] title = {"Id", "Name", "Email", "Department"};
+			int[] ratios = {8, 12, 12, 12};
+			Function<Integer, String[]> function = (i) -> {
+					return users.get(i).asString().split(",");
+				};
+			Formatter.printTabular(title, users.size(), function, ratios, 0, '+', '|', '-');
+			Formatter.printBoxed("     MAIN MENU     ", 0, '+', '|', '-');
 			return super.process();
 		}
 	}
@@ -200,7 +217,7 @@ public abstract class Response implements Serializable, Formatter {
 			// System.out.println("Attempted Login Successful with: " + status);
 			if (this.status == 1) {
 				options = Server.MAIN_MENU;
-				buildMessage();
+				buildMessage(0);
 			} else {
 				setMessage(String.format("\nLogin Unsuccessfull\nInvalid User ID"));
 			}
@@ -240,13 +257,7 @@ public abstract class Response implements Serializable, Formatter {
 		private Update(int code) {
 			this.code = code;
 			options = Server.MAIN_MENU;
-			if (this.code == 0) {
-				buildMessage();
-			} else if (this.code == 1) {
-				setMessage(String.format("Report does not exist!%s", getOptionsAsString(options)));
-			} else {
-				throw new IllegalArgumentException("Unkown status code " + code);
-			}
+			buildMessage(0);
 		}
 
 		@Override
@@ -264,6 +275,17 @@ public abstract class Response implements Serializable, Formatter {
 			return true;
 		}
 
+		@Override
+		public Request process() throws MyException {
+			String s = code == 0 ? ("Report Updated Successfully") : ("Report does not exists");
+			if (code == 0) {
+				Formatter.printBoxed(s, 1, '+', '|', '-');
+			} else {
+				Formatter.printError(s, 1);
+			}
+			Formatter.printBoxed("     MAIN MENU     ", 0, '+', '|', '-');
+			return super.process();
+		}
 	}
 
 	public static class Assign extends Response {
@@ -272,7 +294,7 @@ public abstract class Response implements Serializable, Formatter {
 		private Assign(int code) {
 			this.code = code;
 			options = Server.MAIN_MENU;
-			buildMessage();
+			buildMessage(0);
 		}
 
 		@Override
@@ -310,7 +332,7 @@ public abstract class Response implements Serializable, Formatter {
 		private AddReport(int id) {
 			this.id = id;
 			options = Server.MAIN_MENU;
-			buildMessage();
+			buildMessage(0);
 		}
 
 		@Override
@@ -344,7 +366,7 @@ public abstract class Response implements Serializable, Formatter {
 			this.status = status;
 			if (status == 0) {
 				options = Server.MAIN_MENU;
-				buildMessage();
+				buildMessage(0);
 			} else if (status == 1) {
 				setMessage(String.format("\nRegisteration Failed\nEmail Address already exists"));
 			} else if (status == 2) {

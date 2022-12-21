@@ -21,7 +21,6 @@ public class Worker extends Thread {
 		System.out.println("Worker constructed");
 		
 		this.database = database;
-		
 	}
 
 	@Override
