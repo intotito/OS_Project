@@ -37,7 +37,7 @@ public class Database {
 	}
 
 	private void load(String FILE_PATH, Consumer<String> consumer) throws IOException {
-		System.out.println("Loaading what " + FILE_PATH);
+	//	System.out.println("Loaading what " + FILE_PATH);
 		File file = new File(FILE_PATH);
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(file));
@@ -47,7 +47,7 @@ public class Database {
 			}
 			br.close();
 		} catch (FileNotFoundException fnf) {
-			System.out.println("File not there already, but proceed");
+		//	System.out.println("File not there already, but proceed");
 		}
 	}
 
@@ -75,7 +75,7 @@ public class Database {
 		int code = 0;
 		synchronized (records) {
 			report = records.stream().filter((r) -> r.getId() == reportId).findFirst().orElse(null);
-			System.out.println("Report is this for me assign: " + report);
+		//	System.out.println("Report is this for me assign: " + report);
 		}
 		if (report != null) {
 			synchronized (users) {
@@ -83,7 +83,7 @@ public class Database {
 			}
 			if (user != null) {
 				report.setAssignee(userId);
-				System.out.println("WIll set " + reportId + " for " + userId + report);
+		//		System.out.println("WIll set " + reportId + " for " + userId + report);
 				synchronized (records) {
 					saveToFile(records, REPORT_FILE);
 					records.clear();
@@ -103,11 +103,11 @@ public class Database {
 		Report report = null;
 		synchronized(records) {
 			report = records.stream().filter((r) -> r.getId() == reportId).findFirst().orElse(null);
-			System.out.println("Report is this for me update: " + report);
+	//		System.out.println("Report is this for me update: " + report);
 		}
 		if(report != null) {
 			report.setStatus(status);
-			System.out.println("will set status " + report);
+	//		System.out.println("will set status " + report);
 			synchronized(records) {
 				saveToFile(records, REPORT_FILE);
 				records.clear();
@@ -121,7 +121,7 @@ public class Database {
 
 	public int login(String userID) {
 		long code = 0; // 0 - Doesn't Exist, 1 - OK (Found)
-		System.out.printf("\nChecking for userID: %s", userID);
+//		System.out.printf("\nChecking for userID: %s", userID);
 		synchronized (users) {
 			code = users.stream().filter((u) -> u.getId().equals(userID)).count();
 		}

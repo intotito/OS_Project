@@ -16,6 +16,9 @@ import ie.atu.sw.os.exception.ViewMenuCancelException;
 public abstract class Request implements Serializable {
 	protected String[] options;
 
+	public String getName() {
+		return this.getClass().getCanonicalName().substring(getClass().getCanonicalName().lastIndexOf('.') + 1);
+	}
 	public abstract Response process(Database database) throws IOException;
 
 	public static Request getRequest(String req) throws IOException {
@@ -265,12 +268,12 @@ public abstract class Request implements Serializable {
 
 		@Override
 		public Response process(Database database) throws IOException {
-			System.out.println("Kedu IJE");
+//			System.out.println("Kedu IJE");
 			if (res.equalsIgnoreCase("reports")) {
 				Response.Reports r = (Response.Reports) Response.getResponse(res + code);
 		//		System.out.println("Process reports request");
 
-				System.out.println(r);
+	//			System.out.println(r);
 				r.loadReports(database.getReports(code));
 				return r;
 			} else if (res.equalsIgnoreCase("users")) {
@@ -323,6 +326,10 @@ public abstract class Request implements Serializable {
 			Response response = Response.getResponse("login" + code);
 			return response;
 		}
+		
+		public String getId() {
+			return values[ID];
+		}
 
 	}
 
@@ -342,7 +349,7 @@ public abstract class Request implements Serializable {
 				}
 			}
 		}
-
+		
 		public String getValue(int VALUE) {
 			return values[VALUE];
 		}

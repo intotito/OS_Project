@@ -6,6 +6,33 @@ import java.util.stream.IntStream;
 import ie.atu.sw.os.data.Report;
 
 public interface Formatter {
+	
+	public static void printTabularFeed(String[] entry, int[] ratios, int indent, char corners, char vEdge, char hEdge) {
+		final int rows = 2;
+		final int cols = entry.length;
+		final int unitWidth = 2;
+		final int[] WIDTHS = IntStream.range(0, entry.length).map(index -> {
+			return ratios[index] * unitWidth;
+		}).toArray();
+		for (int i = 0; i < rows; i++) {
+			IntStream.range(0, indent).forEach(index -> System.out.print('\t'));
+			System.out.printf("%c", i % 2 == 1 ? corners : vEdge);
+			
+			for (int j = 0; j < cols; j++) {
+				if (i % 2 == 1) {
+					IntStream.range(0, WIDTHS[j]).forEach(index -> System.out.printf("%c", hEdge));
+					System.out.printf("%c", corners);
+				} else {
+					String s = entry[j];
+					s = s.length() > WIDTHS[j] ? s.substring(0, WIDTHS[j] - 5) + "..." : s;
+					System.out.printf("%s%" + (WIDTHS[j] - s.length() + 1) + "c", s, vEdge);
+				}
+			}
+
+			System.out.print('\n');
+		}
+
+	}
 
 	public static void printTabular(String[] title, int numberOfValues, Function<Integer, String[]> supplier,
 			int[] ratios, int indent, char corners, char vEdge, char hEdge) {
@@ -128,7 +155,7 @@ public interface Formatter {
 	}
 
 	public default String getDefaultCancelString() {
-		return "Cancel";
+		return "Logout";
 	}
 
 	public static void printBoxed(String string, int indent, char corners, char vEdge, char hEdge) {

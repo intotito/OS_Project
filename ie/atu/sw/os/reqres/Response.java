@@ -4,9 +4,15 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
+import ie.atu.sw.os.Savable;
 import ie.atu.sw.os.User;
 import ie.atu.sw.os.data.Report;
 import ie.atu.sw.os.exception.MenuCancelException;
@@ -25,7 +31,9 @@ public abstract class Response implements Serializable, Formatter {
 		sb.append(getStandardOptionsAsString(options, indent));
 		setMessage(sb.toString());
 	}
-
+	public String getName() {
+		return this.getClass().getCanonicalName().substring(getClass().getCanonicalName().lastIndexOf('.') + 1);
+	}
 	public MyException getException() {
 		return new MenuCancelException();
 	}
@@ -90,6 +98,7 @@ public abstract class Response implements Serializable, Formatter {
 		int code;
 
 		private Connect(int code) {
+		//	System.out.println(this.getClass().getName());
 			this.code = code;
 //			System.out.println("Connect code: " + code);
 			String[][] optionSuite = { { "Register", "Login" }, Server.MAIN_MENU, { "Reports", "Users" } };
@@ -105,7 +114,7 @@ public abstract class Response implements Serializable, Formatter {
 
 		@Override
 		public String getDefaultCancelString() {
-			return new String[] { "Exit", "Logout", "Cancel" }[code];
+			return new String[] { "Exit", "Logout", "Logout" }[code];
 		}
 
 		@Override
@@ -157,13 +166,18 @@ public abstract class Response implements Serializable, Formatter {
 			this.reports = reports;
 			buildMessage(0);
 		}
+
 		@Override
 		public Request process() throws MyException {
-			String[] title = {"Id", "App. Name", "Platform", "Description", "Status", "Date", "Asignee"};
-			int[] ratios = {2, 6, 7, 15, 4, 7, 6};
+			String[] title = { "Id", "App. Name", "Platform", "Description", "Status", "Date", "Asignee" };
+			int[] ratios = { 2, 6, 7, 15, 4, 7, 6 };
 			Function<Integer, String[]> function = (i) -> {
-					return reports.get(i).asString().split(",");
-				};
+				String[] arrays = Arrays.stream(reports.get(i).asStandardString().split(",")).map((String s) -> {
+					return s.replace(Savable.ESCAPE_CHAR, ',');
+				}).toArray(String[]::new);
+				return arrays;
+
+			};
 			Formatter.printTabular(title, reports.size(), function, ratios, 0, '+', '|', '-');
 			Formatter.printBoxed("     MAIN MENU     ", 0, '+', '|', '-');
 			return super.process();
@@ -176,7 +190,7 @@ public abstract class Response implements Serializable, Formatter {
 		private Users() {
 
 			options = Server.MAIN_MENU;
-		//	buildMessage(0);
+			// buildMessage(0);
 		}
 
 		@Override
@@ -185,8 +199,8 @@ public abstract class Response implements Serializable, Formatter {
 		}
 
 		public void loadUsers(List<User> users) {
-	//		System.out.println("Loading Users");
-	//		users.stream().map(User::toString).forEach(System.out::println);
+			// System.out.println("Loading Users");
+			// users.stream().map(User::toString).forEach(System.out::println);
 			this.users = users;
 		}
 
@@ -198,11 +212,13 @@ public abstract class Response implements Serializable, Formatter {
 		@Override
 		public Request process() throws MyException {
 			buildMessage(0);
-			String[] title = {"Id", "Name", "Email", "Department"};
-			int[] ratios = {8, 12, 12, 12};
+			String[] title = { "Id", "Name", "Email", "Department" };
+			int[] ratios = { 8, 12, 12, 12 };
 			Function<Integer, String[]> function = (i) -> {
-					return users.get(i).asString().split(",");
-				};
+				return Arrays.stream(users.get(i).asString().split(",")).map((s) -> {
+					return s.replace(Savable.ESCAPE_CHAR, ',');
+				}).toArray(String[]::new);
+			};
 			Formatter.printTabular(title, users.size(), function, ratios, 0, '+', '|', '-');
 			Formatter.printBoxed("     MAIN MENU     ", 0, '+', '|', '-');
 			return super.process();

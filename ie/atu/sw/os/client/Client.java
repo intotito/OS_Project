@@ -20,6 +20,8 @@ public class Client implements Runnable {
 	public void startService() {
 		new Thread(this).start();
 	}
+	
+
 
 	@Override
 	public void run() {
@@ -37,7 +39,7 @@ public class Client implements Runnable {
 //						System.out.println("Response: " + response);
 						request = response.process();
 					} catch (MenuCancelException e) {
-						e.printStackTrace();
+				//		e.printStackTrace();
 						response = null;
 						response = Response.getResponse("connect0");
 						continue;

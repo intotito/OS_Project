@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 
 import ie.atu.sw.os.Savable;
 
@@ -31,7 +32,7 @@ public class Report implements Savable, Serializable{
 		this.status = STATUS.valueOf(arrays[i++]);
 		this.date = LocalDateTime.ofInstant(Instant.ofEpochMilli(Long.parseLong(arrays[i++])), ZoneId.systemDefault());
 		this.assignee = arrays[i++].replace(ESCAPE_CHAR, ',');
-		System.out.println(date);
+//		System.out.println(date);
 	}
 	private int id = -1;
 	private String appName, platform, descr;
@@ -52,6 +53,19 @@ public class Report implements Savable, Serializable{
 		.append(assignee.replace(',', ESCAPE_CHAR)).append(",\n");
 		return sb.toString();
 	}
+	
+	public String asStandardString() {
+		StringBuilder sb = new StringBuilder()
+		.append(id).append(",")
+		.append(appName.replace(',', ESCAPE_CHAR)).append(",")
+		.append(platform.replace(',', ESCAPE_CHAR)).append(",")
+		.append(descr.replace(',', ESCAPE_CHAR)).append(",")
+		.append(status).append(",")
+		.append(date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))).append(",")
+		.append(assignee.replace(',', ESCAPE_CHAR)).append(",\n");
+		return sb.toString();
+	}
+	
 	public void setId(int id) {
 		this.id = id;
 	}
