@@ -13,10 +13,20 @@ import ie.atu.sw.os.reqres.Request;
 import ie.atu.sw.os.reqres.Response;
 import ie.atu.sw.os.server.Server;
 
+/**
+ * This class represents a client using the application
+ * @author intot
+ *
+ */
 public class Client implements Runnable {
+	/**
+	 * Creates a new instance of Client
+	 */
 	public Client() {
 	}
-
+/**
+ * Starts the client service on a new thread
+ */
 	public void startService() {
 		new Thread(this).start();
 	}
@@ -36,7 +46,6 @@ public class Client implements Runnable {
 				response = (Response) is.readObject();
 				do {
 					try {
-//						System.out.println("Response: " + response);
 						request = response.process();
 					} catch (MenuCancelException e) {
 				//		e.printStackTrace();
