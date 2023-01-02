@@ -70,7 +70,11 @@ public class Server implements Runnable {
 		Formatter.printTabularFeed(entry, ratios, 0, '+', '|', '-');
 		System.out.format("|Number of Connections: %d", CONNECTIONS.get());
 	}
-
+/**
+ * Application Entry method for the Server
+ * @param args - Command line arguments
+ * @throws IOException - If server terminated forcefully
+ */
 	public static void main(String[] args) throws IOException {
 		Server server = new Server();
 		Formatter.printBoxedTitled("     Bug Tracker     ", "       Server       ", 2, '+', '|', '-', 1);

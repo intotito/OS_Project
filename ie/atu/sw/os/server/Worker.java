@@ -11,13 +11,23 @@ import java.time.format.DateTimeFormatter;
 import ie.atu.sw.os.data.Database;
 import ie.atu.sw.os.reqres.Request;
 import ie.atu.sw.os.reqres.Response;
-
+/**
+ * This class represents a worker thread that serves a particular client
+ * @author intot
+ *
+ */
 public class Worker extends Thread {
 	private ObjectOutputStream os;
 	private ObjectInputStream is;
 	private Database database;
 	private String userId;
-
+/**
+ * Creates a new instance of a Worker
+ * @param is - InputStream to read data from
+ * @param os - OutputStrema to write data to
+ * @param database - A shared instance of the database
+ * @throws IOException - If anything goes wrong
+ */
 	protected Worker(InputStream is, OutputStream os, Database database) throws IOException {
 		this.os = new ObjectOutputStream(os);
 		this.is = new ObjectInputStream(is);
