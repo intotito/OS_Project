@@ -18,11 +18,26 @@ import ie.atu.sw.os.data.Report;
 import ie.atu.sw.os.exception.MenuCancelException;
 import ie.atu.sw.os.exception.MyException;
 import ie.atu.sw.os.server.Server;
-
+/**
+ * This class represents a response sent from the server to the client and 
+ * contains information about the result of prior request sent by the client.
+ * It implements the {@link Serializable} interface and
+ * thus can be deconstructed and reconstructed while being sent as packets.
+ * 
+ * @author intot
+ *
+ */
 public abstract class Response implements Serializable, Formatter {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -6974337194609606334L;
 	private String message;
 	protected String[] options;
-
+/**
+ * Constructs a message in the form of option menus to be displayed to the user
+ * @param indent - The indentation to construct the message with
+ */
 	protected void buildMessage(int indent) {
 		StringBuilder sb = new StringBuilder();
 //		sb.append(getHeaderAsString());
@@ -31,13 +46,27 @@ public abstract class Response implements Serializable, Formatter {
 		sb.append(getStandardOptionsAsString(options, indent));
 		setMessage(sb.toString());
 	}
+	/**
+	 * Gets the name of the Response
+	 * @return - The response name as a String
+	 */
 	public String getName() {
 		return this.getClass().getCanonicalName().substring(getClass().getCanonicalName().lastIndexOf('.') + 1);
 	}
+	/**
+	 * Specifies the type of exception this response throws
+	 * @see ie.atu.sw.os.exception
+	 * @return - The exception to be thrown
+	 */
 	public MyException getException() {
 		return new MenuCancelException();
 	}
-
+/**
+ * This method is ran on the client side of the Application and performs the necessary
+ * actions on the response according the result of the prior request.
+ * @return - Next request from the client after processing the response
+ * @throws MyException - If cancel option is selected while generating the next request
+ */
 	public Request process() throws MyException {
 		// System.out.println(this.getClass().getName() + " Calling process");
 		System.out.print(getMessage());
@@ -72,7 +101,12 @@ public abstract class Response implements Serializable, Formatter {
 		}
 		throw new IllegalStateException("What went wrong");
 	}
-
+	/**
+	 * A factory method for retrieving a type of response.
+	 * @param req - String representation of the type of response to retrieve
+	 * @return - The Response specified
+	 * @throws IOException - If anything goes wrong
+	 */
 	public static Response getResponse(String res) {
 		if (res.toLowerCase().matches("connect\\d")) {
 			return new Connect(Integer.parseInt(res.substring("connect".length())));
@@ -96,8 +130,17 @@ public abstract class Response implements Serializable, Formatter {
 		}
 		throw new IllegalArgumentException("Unknown Response type " + res);
 	}
-
+	/**
+	 * A response that shows the user the initial menu options of the Application
+	 * @see #Response
+	 * @author intot
+	 *
+	 */
 	public static class Connect extends Response {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 4336548764913148708L;
 		public static final int REG_LOGING = 0, MAIN_MENU = 1, VIEW_MENU = 2;
 		int code;
 
@@ -130,6 +173,11 @@ public abstract class Response implements Serializable, Formatter {
 		public MyException getException() {
 	//		System.out.println("My code: " + code);
 			return code == 0 ? (new MyException() {
+
+				/**
+				 * 
+				 */
+				private static final long serialVersionUID = -7269231705778976363L;
 			}) : new MenuCancelException();
 		}
 
@@ -142,8 +190,17 @@ public abstract class Response implements Serializable, Formatter {
 			return super.process();
 		}
 	}
-
+	/**
+	 * A response as a result of a {@link #Request.AddReport AddReport} request
+	 * @see #Response
+	 * @author intot
+	 *
+	 */
 	public static class Reports extends Response {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 3784542953419176453L;
 		private int code;
 		private List<Report> reports;
 
@@ -187,8 +244,18 @@ public abstract class Response implements Serializable, Formatter {
 			return super.process();
 		}
 	}
-
+	/**
+	 * A response as a result of a {@link #Request.View View} request.
+	 * Displays the list of users to the user
+	 * @see #Response
+	 * @author intot
+	 *
+	 */
 	public static class Users extends Response {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 7773466124451337928L;
 		private List<User> users;
 
 		private Users() {
@@ -228,8 +295,18 @@ public abstract class Response implements Serializable, Formatter {
 			return super.process();
 		}
 	}
-
+	/**
+	 * A response as a result of a {@link #Request.Login Login} request.
+	 * Contains code to verify if the login was successful or not
+	 * @see #Response
+	 * @author intot
+	 *
+	 */
 	public static class Login extends Response {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -5227850576168707492L;
 		private int status;
 
 		private Login(int status) {
@@ -270,8 +347,18 @@ public abstract class Response implements Serializable, Formatter {
 			return true;
 		}
 	}
-
+	/**
+	 * A response as a result of a {@link #Request.Update Update} request.
+	 * Contains code to verify if the update was successful
+	 * @see #Response
+	 * @author intot
+	 *
+	 */
 	public static class Update extends Response {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -6012676569929338739L;
 		private int code;
 
 		private Update(int code) {
@@ -307,8 +394,18 @@ public abstract class Response implements Serializable, Formatter {
 			return super.process();
 		}
 	}
-
+	/**
+	 * A response as a result of a {@link #Request.Assign Assign} request.
+	 * Contains code to verify if the assignment was successful or not
+	 * @see #Response
+	 * @author intot
+	 *
+	 */
 	public static class Assign extends Response {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 7601101355773724267L;
 		private int code;
 
 		private Assign(int code) {
@@ -345,8 +442,18 @@ public abstract class Response implements Serializable, Formatter {
 			return super.process();
 		}
 	}
-
+	/**
+	 * A response as a result of a {@link #Request.AddReport AddReport} request.
+	 * Contains code to verify if the report was added was successful or not
+	 * @see #Response
+	 * @author intot
+	 *
+	 */
 	public static class AddReport extends Response {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -7635944868527004361L;
 		private int id;
 
 		private AddReport(int id) {
@@ -377,9 +484,19 @@ public abstract class Response implements Serializable, Formatter {
 			return super.process();
 		}
 	}
-
+	/**
+	 * A response as a result of a {@link #Request.Register Register} request.
+	 * Contains code to verify if the registration was successful or not
+	 * @see #Response
+	 * @author intot
+	 *
+	 */
 	public static class Register extends Response {
 
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 6013702546376497327L;
 		private int status;
 
 		private Register(int status) {

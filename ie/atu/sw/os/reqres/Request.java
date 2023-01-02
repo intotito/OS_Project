@@ -13,14 +13,45 @@ import ie.atu.sw.os.exception.MenuCancelException;
 import ie.atu.sw.os.exception.MyException;
 import ie.atu.sw.os.exception.ViewMenuCancelException;
 
+/**
+ * This class represents a request sent from the client to the server and
+ * contains all necessary information for processing the request on the server
+ * side of the application. It implements the {@link Serializable} interface and
+ * thus can be deconstructed and reconstructed while being sent as packets.
+ * 
+ * @author intot
+ *
+ */
 public abstract class Request implements Serializable {
+	/**
+	 * Menu options for this request
+	 */
 	protected String[] options;
 
+	/**
+	 * Name of the request
+	 * 
+	 * @return - The request name as a String
+	 */
 	public String getName() {
 		return this.getClass().getCanonicalName().substring(getClass().getCanonicalName().lastIndexOf('.') + 1);
 	}
-	public abstract Response process(Database database) throws IOException;
 
+	/**
+	 * This method is ran on the server side of the Application and performs the
+	 * necessary processing on the request for a given request
+	 * 
+	 * @param database - The centralized data source where all information is saved
+	 * @return - Returns a response that will be sent back to the client
+	 * @throws IOException - If anything goes wrong during processing
+	 */
+	public abstract Response process(Database database) throws IOException;
+/**
+ * A factory method for retrieving a type of request
+ * @param req - String representation of the type of request to retrieve
+ * @return - The Request specified
+ * @throws IOException
+ */
 	public static Request getRequest(String req) throws IOException {
 //		System.out.println("Attempting " + req);
 		try {
@@ -53,12 +84,17 @@ public abstract class Request implements Serializable {
 					e.printStackTrace();
 					throw new IOException("Connection Terminated");
 				}
-			//	break;
+				// break;
 			} while (true);
 		}
 		throw new IllegalArgumentException(String.format("'%s' Requested Not Supported", req));
 	}
-
+/**
+ * A request for adding a new report to the database
+ * @see #Request
+ * @author intot
+ *
+ */
 	public static class AddReport extends Request {
 		private static int NAME = 0, PLATFORM = 1, DESCR = 2;
 		private String[] values = new String[5];
@@ -83,7 +119,12 @@ public abstract class Request implements Serializable {
 		}
 
 	}
-
+	/**
+	 * A request for updating information in the database
+	 * @see #Request
+	 * @author intot
+	 *
+	 */
 	public static class Update extends Request implements Formatter {
 		private static int REPORT_ID = 0, STATUS_ID = 1;
 		private String[] values = new String[2];
@@ -98,7 +139,7 @@ public abstract class Request implements Serializable {
 			}
 			Formatter.printBoxed("Select Status", 1, '+', '|', '-');
 			String[] menus = Arrays.stream(Report.STATUS.values()).map(Enum::toString).toArray(String[]::new);
-	//		System.out.printf(getHeaderAsString());
+			// System.out.printf(getHeaderAsString());
 			System.out.printf(getStandardOptionsAsString(menus, 1));
 			int value = -1;
 			String valString = null;
@@ -107,7 +148,8 @@ public abstract class Request implements Serializable {
 					valString = reader.readLine().trim();
 					value = Integer.parseInt(valString);
 				} catch (NumberFormatException nfe) {
-	//				System.out.format("Invalid Option '%s' Entered%s", valString, getSelectionsAsString(menus));
+					// System.out.format("Invalid Option '%s' Entered%s", valString,
+					// getSelectionsAsString(menus));
 					Formatter.printError(String.format("Invalid Option '%s' Entered", valString), 1);
 					System.out.print("\n" + getStandardSelectionAsString(menus, 1));
 					continue;
@@ -150,7 +192,12 @@ public abstract class Request implements Serializable {
 			return true;
 		}
 	}
-
+	/**
+	 * A request for assigning a user to a Bug report
+	 * @see #Request
+	 * @author intot
+	 *
+	 */
 	public static class Assign extends Request {
 		private static int REPORT_ID = 0, USER_ID = 1;
 		private String[] values = new String[2];
@@ -179,7 +226,12 @@ public abstract class Request implements Serializable {
 			return response;
 		}
 	}
-
+	/**
+	 * A request for viewing information in the database
+	 * @see #Request
+	 * @author intot
+	 *
+	 */
 	public static class View extends Request implements Formatter {
 		private String res;
 		private int code = -1; // 1 - Assigned, 1 - Unassigned
@@ -200,7 +252,7 @@ public abstract class Request implements Serializable {
 							value = Integer.parseInt(valString);
 						} catch (NumberFormatException nfe) {
 //							System.out.format("\tInvalid Option '%s' Entered%s", valString,
-	///								getSelectionsAsString(menus, 1));
+							/// getSelectionsAsString(menus, 1));
 							Formatter.printError(String.format("Invalid Option '%s' Entered", valString), 1);
 							System.out.print("\n" + getStandardSelectionAsString(menus, 1));
 							continue;
@@ -211,8 +263,8 @@ public abstract class Request implements Serializable {
 							throw new MenuCancelException();
 						}
 						if (value < 1 || value > menus.length) {
-			//				System.out.format("\tInvalid Option '%d' Entered%s", value,
-				//					getSelectionsAsString(menus, 1));
+							// System.out.format("\tInvalid Option '%d' Entered%s", value,
+							// getSelectionsAsString(menus, 1));
 							Formatter.printError(String.format("Invalid Option '%d' Entered", value), 1);
 							System.out.print("\n" + getStandardSelectionAsString(menus, 1));
 							continue;
@@ -229,8 +281,8 @@ public abstract class Request implements Serializable {
 								valString = reader.readLine().trim();
 								value = Integer.parseInt(valString);
 							} catch (NumberFormatException nfe) {
-	//							System.out.format("\t\tInvalid Option '%s' Entered%s", valString,
-		//								getSelectionsAsString(subMenus, 2));
+								// System.out.format("\t\tInvalid Option '%s' Entered%s", valString,
+								// getSelectionsAsString(subMenus, 2));
 								Formatter.printError(String.format("Invalid Option '%s' Entered", valString), 2);
 								System.out.print("\n" + getStandardSelectionAsString(subMenus, 2));
 								value = -1;
@@ -244,22 +296,22 @@ public abstract class Request implements Serializable {
 								continue out;
 							}
 							if (value < 1 || value > subMenus.length) {
-	//							System.out.format("\t\tInvalid Option '%d' Entered%s", value,
-		//								getSelectionsAsString(subMenus, 2));
+								// System.out.format("\t\tInvalid Option '%d' Entered%s", value,
+								// getSelectionsAsString(subMenus, 2));
 								Formatter.printError(String.format("Invalid Option '%d' Entered", value), 2);
 								System.out.print("\n" + getStandardSelectionAsString(subMenus, 2));
 								continue;
 							}
 						} while (value < 1 || value > menus.length);
 						code = value - 1; // 0 - Reports, 1 - Users
-	//					System.out.println("Code : " + code);
+						// System.out.println("Code : " + code);
 					}
-		//			System.out.println("RES: " + res);
+					// System.out.println("RES: " + res);
 					break;
 				} catch (NumberFormatException nfe) {
 					nfe.printStackTrace();
 				}
-				
+
 			} while (true);
 			/*
 			 * catch (IOException e) { e.printStackTrace(); }
@@ -271,15 +323,15 @@ public abstract class Request implements Serializable {
 //			System.out.println("Kedu IJE");
 			if (res.equalsIgnoreCase("reports")) {
 				Response.Reports r = (Response.Reports) Response.getResponse(res + code);
-		//		System.out.println("Process reports request");
+				// System.out.println("Process reports request");
 
-	//			System.out.println(r);
+				// System.out.println(r);
 				r.loadReports(database.getReports(code));
 				return r;
 			} else if (res.equalsIgnoreCase("users")) {
-		//		System.out.println("Process users requeest");
+				// System.out.println("Process users requeest");
 				Response.Users u = (Response.Users) Response.getResponse(res);
-		//		System.out.println(u);
+				// System.out.println(u);
 				u.loadUsers(database.getUsers());
 
 				return u;
@@ -302,7 +354,12 @@ public abstract class Request implements Serializable {
 			return "Back";
 		}
 	}
-
+	/**
+	 * A request Loggiing into the Application
+	 * @see #Request
+	 * @author intot
+	 *
+	 */
 	public static class Login extends Request {
 		private static int ID = 0;
 		private String[] values = new String[1];
@@ -326,13 +383,18 @@ public abstract class Request implements Serializable {
 			Response response = Response.getResponse("login" + code);
 			return response;
 		}
-		
+
 		public String getId() {
 			return values[ID];
 		}
 
 	}
-
+	/**
+	 * A request for registering a new user in the Application
+	 * @see #Request
+	 * @author intot
+	 *
+	 */
 	public static class Register extends Request {
 		private static int ID = 0, NAME = 1, EMAIL = 2, DEPT = 3;
 		private String[] values = new String[4];
@@ -349,7 +411,7 @@ public abstract class Request implements Serializable {
 				}
 			}
 		}
-		
+
 		public String getValue(int VALUE) {
 			return values[VALUE];
 		}
